@@ -1,0 +1,42 @@
+{
+  "name": "alpha-command-bus",
+  "version": "0.1.0",
+  "description": "Very suimple command bus implementation",
+  "main": "compiled/index.js",
+  "types": "compiled/index.d.ts",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha -r ts-node/register -r test/bootstrap.ts test/**/*Test.ts",
+    "compile": "./node_modules/.bin/tsc",
+    "prepublish": "npm run compile"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wookieb/alpha-command-bus.git"
+  },
+  "keywords": [
+    "command-bus",
+    "cqrs",
+    "command"
+  ],
+  "author": "Łukasz Kużyński <lukasz.kuzynski@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wookieb/alpha-command-bus/issues"
+  },
+  "homepage": "https://github.com/wookieb/alpha-command-bus#readme",
+  "devDependencies": {
+    "@types/chai": "^4.0.4",
+    "@types/chai-as-promised": "^7.1.0",
+    "@types/mocha": "^2.2.43",
+    "@types/sinon": "^2.3.5",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "mocha": "^4.0.1",
+    "sinon": "^4.0.1",
+    "ts-node": "^3.3.0",
+    "typescript": "^2.5.3"
+  },
+  "dependencies": {
+    "reflect-metadata": "^0.1.10"
+  }
+}
