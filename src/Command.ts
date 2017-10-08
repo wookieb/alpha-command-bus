@@ -7,7 +7,7 @@ export function createCommand(commandName: string, extraProperties?: object): Co
 }
 
 export class BaseCommand implements Command {
-    constructor(public readonly command: string, data: { [key: string]: any }) {
+    constructor(public readonly command: string, extraProperties?: { [key: string]: any }) {
         Object.freeze(this);
     }
 }
