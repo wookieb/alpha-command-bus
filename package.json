@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Very suimple command bus implementation",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
@@ -17,6 +17,9 @@
     "command-bus",
     "cqrs",
     "command"
+  ],
+  "files": [
+    "compiled"
   ],
   "author": "Łukasz Kużyński <lukasz.kuzynski@gmail.com>",
   "license": "MIT",
