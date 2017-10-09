@@ -1,16 +1,16 @@
 import "reflect-metadata";
-import {CommandHandlerFunc} from "./CommandBus";
+import {CommandHandlerFunc, CommandMapper, CommandPredicate} from "./CommandBus";
 
 const COMMAND_METADATA = Symbol('alpha-command-bus');
 
 interface CommandBusClassMetadata {
-    methods: { commandName: string, method: string }[]
+    methods: { commandName: CommandMapper, method: string }[]
 }
 
-export function CommandHandler(commandName: string) {
+export function CommandHandler(command: CommandMapper) {
     return (target: any, method: string, descriptor: PropertyDescriptor) => {
         ensureMetadata(target).methods.push({
-            commandName,
+            commandName: command,
             method
         })
     }
@@ -28,7 +28,10 @@ function ensureMetadata(target: Function): CommandBusClassMetadata {
     return metadata;
 }
 
-export function getCommandHandlers(object: { [method: string]: any | CommandHandlerFunc }): Map<string, CommandHandlerFunc> {
+/**
+ * Returns command handlers registered with decorator in given object
+ */
+export function getCommandHandlers(object: { [method: string]: any | CommandHandlerFunc }): Map<CommandMapper, CommandHandlerFunc> {
     const metadata: CommandBusClassMetadata = Reflect.getMetadata(COMMAND_METADATA, object);
 
     const map = new Map();
@@ -36,7 +39,7 @@ export function getCommandHandlers(object: { [method: string]: any | CommandHand
     metadata.methods.forEach((entry) => {
         const method = object[entry.method];
         if (!(method instanceof Function)) {
-            throw new Error(`Property "${entry.method}" has be a method`);
+            throw new Error(`Property "${entry.method}" has to be a method`);
         }
         map.set(entry.commandName, method.bind(object));
     });

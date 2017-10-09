@@ -28,4 +28,13 @@ describe('decorators', () => {
             ]
         );
     });
+
+    it('throws an error if decorated property is not a function', () => {
+        assert.throws(() => {
+            const container = new ExampleCommandsHandlerContainer();
+            container.handler2 = <any>'test';
+
+            getCommandHandlers(container);
+        }, /has to be a method/);
+    })
 });

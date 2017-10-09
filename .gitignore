@@ -1,3 +1,5 @@
 .idea
 compiled
 node_modules
+coverage
+.nyc_output

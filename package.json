@@ -1,11 +1,12 @@
 {
   "name": "alpha-command-bus",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Very suimple command bus implementation",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
   "scripts": {
     "test": "./node_modules/.bin/mocha -r ts-node/register -r test/bootstrap.ts test/**/*Test.ts",
+    "test:coverage": "./node_modules/.bin/nyc npm test",
     "compile": "./node_modules/.bin/tsc",
     "prepublish": "npm run compile"
   },
@@ -31,15 +32,34 @@
     "@types/chai": "^4.0.4",
     "@types/chai-as-promised": "^7.1.0",
     "@types/mocha": "^2.2.43",
+    "@types/node": "^8.0.33",
     "@types/sinon": "^2.3.5",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "mocha": "^4.0.1",
+    "nyc": "^11.2.1",
     "sinon": "^4.0.1",
     "ts-node": "^3.3.0",
     "typescript": "^2.5.3"
   },
   "dependencies": {
+    "array-find": "^1.0.0",
+    "lodash.matches": "^4.6.0",
     "reflect-metadata": "^0.1.10"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "requires": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text",
+      "html"
+    ]
   }
 }

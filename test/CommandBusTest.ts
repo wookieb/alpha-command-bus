@@ -24,12 +24,14 @@ describe('CommandBus', () => {
         commandBus.registerCommandHandler(COMMAND_NAME, () => {
             return RESULT;
         });
+
     });
 
     it('checking whether command has a handler', () => {
-        assert.isTrue(commandBus.hasCommandHandler(COMMAND_NAME));
-        assert.isFalse(commandBus.hasCommandHandler('test'));
+        assert.isTrue(commandBus.hasCommandHandler(createCommand(COMMAND_NAME)));
+        assert.isFalse(commandBus.hasCommandHandler(createCommand('fake-command')));
     });
+
 
     describe('handling command', () => {
         it('simple command', async () => {
@@ -42,6 +44,78 @@ describe('CommandBus', () => {
                 commandBus.handle(createCommand('test')),
                 /No command handler registered for command: test/
             );
+        });
+    });
+
+    describe('command mapping', () => {
+        let commandBus: CommandBus;
+        beforeEach(() => {
+            commandBus = new CommandBus();
+        });
+
+        it('simple command name', async () => {
+            const commandBus = new CommandBus();
+            commandBus.registerCommandHandler(COMMAND_NAME, () => RESULT);
+
+            const result = await commandBus.handle(createCommand(COMMAND_NAME));
+            assert.strictEqual(result, RESULT);
+        });
+
+        it('object matching', async () => {
+            const PROPERTY = 'propertyValue';
+            commandBus.registerCommandHandler({command: COMMAND_NAME, property: PROPERTY}, () => RESULT);
+            const result = await commandBus.handle(createCommand(COMMAND_NAME, {property: PROPERTY}));
+            assert.strictEqual(result, RESULT);
+        });
+
+        it('custom predicate', async () => {
+            const PROPERTY = 'propertyValue';
+
+            commandBus.registerCommandHandler((command: Command) => (<any>command).property === PROPERTY, () => RESULT);
+
+            const result = await commandBus.handle(createCommand(COMMAND_NAME, {property: PROPERTY}));
+            assert.strictEqual(result, RESULT);
+        });
+
+        it('throws an error if command name is not a function, string or an object', () => {
+            assert.throws(() => {
+                commandBus.registerCommandHandler(<any>true, () => RESULT)
+            }, 'Command predicate has to be a function, a string or an object');
+        });
+
+        describe('multiple mappings at a time', () => {
+            const COMMAND_1 = 'command1';
+            const COMMAND_2 = 'command2';
+
+            const HANDLER = (command: Command) => command.command;
+
+            it('as an object', async () => {
+
+                commandBus.registerCommandHandlers({
+                    [COMMAND_1]: HANDLER,
+                    [COMMAND_2]: HANDLER
+                });
+
+                assert.strictEqual(await commandBus.handle(createCommand(COMMAND_1)), COMMAND_1);
+                assert.strictEqual(await commandBus.handle(createCommand(COMMAND_2)), COMMAND_2);
+            });
+
+            it('as a map', async () => {
+                const mappings = new Map([
+                    [
+                        (c: Command) => c.command === COMMAND_1,
+                        HANDLER
+                    ],
+                    [
+                        (c: Command) => c.command === COMMAND_2,
+                        HANDLER
+                    ]
+                ]);
+
+                commandBus.registerCommandHandlers(mappings);
+                assert.strictEqual(await commandBus.handle(createCommand(COMMAND_1)), COMMAND_1);
+                assert.strictEqual(await commandBus.handle(createCommand(COMMAND_2)), COMMAND_2);
+            })
         });
     });
 
