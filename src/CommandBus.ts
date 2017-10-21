@@ -13,7 +13,7 @@ export type CommandPredicate = (command: Command) => boolean;
 export type CommandMapper = string | object | CommandPredicate;
 
 type CommandHandlerMappingTuple = [CommandPredicate, CommandHandlerFunc];
-export default class CommandBus {
+export class CommandBus {
 
     private middlewares: Middleware[] = [];
     private commandHandlers: CommandHandlerMappingTuple[] = [];
