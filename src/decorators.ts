@@ -1,22 +1,22 @@
 import "reflect-metadata";
-import {CommandHandlerFunc, CommandFilter, CommandPredicate} from "./CommandBus";
+import {CommandHandlerFunc, CommandBus, CommandFilter, CommandPredicate} from "./CommandBus";
 import {Command} from "./Command";
 
 const COMMAND_METADATA = Symbol('alpha-command-bus');
 
 export interface CommandHandlerObjectEntry {
-    commandFilter: CommandFilter,
+    commandPredicate: CommandPredicate,
     commandHandler: (command: Command) => any
 }
 
 interface CommandBusClassMetadata {
-    methods: { commandFilter: CommandFilter, method: string }[]
+    methods: { commandPredicate: CommandPredicate, method: string }[]
 }
 
 export function CommandHandler(commandFilter: CommandFilter) {
     return (target: any, method: string, descriptor: PropertyDescriptor) => {
         ensureMetadata(target).methods.push({
-            commandFilter,
+            commandPredicate: CommandBus.commandFilterToPredicate(commandFilter),
             method
         })
     }
@@ -51,7 +51,7 @@ export function getCommandHandlers(object: { [method: string]: any | CommandHand
         }
 
         return {
-            commandFilter: entry.commandFilter,
+            commandPredicate: entry.commandPredicate,
             commandHandler: method.bind(object)
         };
     });

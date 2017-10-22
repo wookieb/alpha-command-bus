@@ -21,14 +21,11 @@ describe('decorators', () => {
         const handlers = getCommandHandlers(container);
 
 
+        assert.isTrue(handlers[0].commandPredicate({command: 'commandName'}));
+        assert.isTrue(handlers[1].commandPredicate({command: 'commandName2'}));
         assert.sameDeepMembers(
-            handlers.map(e => {
-                return [e.commandFilter, e.commandHandler({command: 'test'})]
-            }),
-            [
-                ['commandName', 'handler1'],
-                ['commandName2', 'handler2']
-            ]
+            handlers.map(e => e.commandHandler({command: 'test'})),
+            ['handler1', 'handler2']
         );
     });
 

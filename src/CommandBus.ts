@@ -13,6 +13,7 @@ export type CommandPredicate = (command: Command) => boolean;
 export type CommandFilter = string | object | CommandPredicate;
 
 type CommandHandlerMappingTuple = [CommandPredicate, CommandHandlerFunc];
+
 export class CommandBus {
 
     private middlewares: Middleware[] = [];
@@ -31,26 +32,27 @@ export class CommandBus {
      */
     registerCommandHandler(command: CommandFilter, handler: CommandHandlerFunc): this {
 
+        const commandPredicate = CommandBus.commandFilterToPredicate(command);
+        this.commandHandlers.push([commandPredicate, handler]);
+        return this;
+    }
+
+    static commandFilterToPredicate(commandFilter: CommandFilter): CommandPredicate {
         switch (true) {
-            case typeof command === 'string':
-                const commandName = command;
-                command = (c: Command) => c.command === commandName;
-                break;
+            case typeof commandFilter === 'string':
+                const commandName = commandFilter;
+                return (c: Command) => c.command === commandName;
 
-            case typeof command === 'object':
-                command = <CommandPredicate>matchesObject(command);
-                break;
+            case typeof commandFilter === 'object':
+                return <CommandPredicate>matchesObject(commandFilter);
 
-            case command instanceof Function:
-                // leave it as it is
-                break;
+
+            case commandFilter instanceof Function:
+                return <CommandPredicate>commandFilter;
 
             default:
                 throw new Error('Command predicate has to be a function, a string or an object');
-
         }
-        this.commandHandlers.push([<CommandPredicate>command, handler]);
-        return this;
     }
 
     /**
