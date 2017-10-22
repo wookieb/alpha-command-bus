@@ -8,9 +8,9 @@ export type CommandHandlerFunc = (command: Command) => Promise<any> | any;
 export type CommandPredicate = (command: Command) => boolean;
 
 /**
- * Possible input types for command mapping: CommandMapper => CommandHandlerFunc
+ * Possible input types for command mapping: CommandFilter => CommandHandlerFunc
  */
-export type CommandMapper = string | object | CommandPredicate;
+export type CommandFilter = string | object | CommandPredicate;
 
 type CommandHandlerMappingTuple = [CommandPredicate, CommandHandlerFunc];
 export class CommandBus {
@@ -29,7 +29,7 @@ export class CommandBus {
     /**
      * Register command handler - a function responsible for handling a command
      */
-    registerCommandHandler(command: CommandMapper, handler: CommandHandlerFunc): this {
+    registerCommandHandler(command: CommandFilter, handler: CommandHandlerFunc): this {
 
         switch (true) {
             case typeof command === 'string':
@@ -56,7 +56,7 @@ export class CommandBus {
     /**
      * Registers multiple command handlers at a time
      */
-    registerCommandHandlers(commandHandlers: Map<CommandMapper, CommandHandlerFunc> | { [commandName: string]: CommandHandlerFunc }): this {
+    registerCommandHandlers(commandHandlers: Map<CommandFilter, CommandHandlerFunc> | { [commandName: string]: CommandHandlerFunc }): this {
         if (commandHandlers instanceof Map) {
             for (const [commandName, commandHandler] of commandHandlers) {
                 this.registerCommandHandler(commandName, commandHandler);

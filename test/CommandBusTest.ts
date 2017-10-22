@@ -1,4 +1,4 @@
-import CommandBus from "../src/CommandBus";
+import {CommandBus} from "../src/CommandBus";
 import {assert} from 'chai';
 import {Command, createCommand} from "../src/Command";
 import * as sinon from 'sinon';

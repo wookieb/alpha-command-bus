@@ -20,8 +20,11 @@ describe('decorators', () => {
         const container = new ExampleCommandsHandlerContainer();
         const handlers = getCommandHandlers(container);
 
+
         assert.sameDeepMembers(
-            Array.from(handlers).map(e => [e[0], e[1]({command: 'test'})]),
+            handlers.map(e => {
+                return [e.commandFilter, e.commandHandler({command: 'test'})]
+            }),
             [
                 ['commandName', 'handler1'],
                 ['commandName2', 'handler2']

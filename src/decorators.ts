@@ -1,16 +1,22 @@
 import "reflect-metadata";
-import {CommandHandlerFunc, CommandMapper, CommandPredicate} from "./CommandBus";
+import {CommandHandlerFunc, CommandFilter, CommandPredicate} from "./CommandBus";
+import {Command} from "./Command";
 
 const COMMAND_METADATA = Symbol('alpha-command-bus');
 
-interface CommandBusClassMetadata {
-    methods: { commandName: CommandMapper, method: string }[]
+export interface CommandHandlerObjectEntry {
+    commandFilter: CommandFilter,
+    commandHandler: (command: Command) => any
 }
 
-export function CommandHandler(command: CommandMapper) {
+interface CommandBusClassMetadata {
+    methods: { commandFilter: CommandFilter, method: string }[]
+}
+
+export function CommandHandler(commandFilter: CommandFilter) {
     return (target: any, method: string, descriptor: PropertyDescriptor) => {
         ensureMetadata(target).methods.push({
-            commandName: command,
+            commandFilter,
             method
         })
     }
@@ -31,17 +37,22 @@ function ensureMetadata(target: Function): CommandBusClassMetadata {
 /**
  * Returns command handlers registered with decorator in given object
  */
-export function getCommandHandlers(object: { [method: string]: any | CommandHandlerFunc }): Map<CommandMapper, CommandHandlerFunc> {
+export function getCommandHandlers(object: { [method: string]: any | CommandHandlerFunc }): CommandHandlerObjectEntry[] {
     const metadata: CommandBusClassMetadata = Reflect.getMetadata(COMMAND_METADATA, object);
 
-    const map = new Map();
+    if (!metadata) {
+        return [];
+    }
 
-    metadata.methods.forEach((entry) => {
+    return metadata.methods.map((entry) => {
         const method = object[entry.method];
         if (!(method instanceof Function)) {
             throw new Error(`Property "${entry.method}" has to be a method`);
         }
-        map.set(entry.commandName, method.bind(object));
+
+        return {
+            commandFilter: entry.commandFilter,
+            commandHandler: method.bind(object)
+        };
     });
-    return map;
 }
