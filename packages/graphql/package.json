@@ -1,0 +1,27 @@
+{
+  "name": "alpha-command-bus-graphql",
+  "version": "1.0.0",
+  "description": "Graphql to Command bus commands mapper",
+  "main": "compiled/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wookieb/alpha-command-bus.git"
+  },
+  "keywords": [
+    "command-bus",
+    "alpha-packages",
+    "graphql"
+  ],
+  "author": "Łukasz Kużyński",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wookieb/alpha-command-bus/issues"
+  },
+  "homepage": "https://github.com/wookieb/alpha-command-bus#readme",
+  "peerDependencies": {
+    "alpha-command-bus": "^0.2.5"
+  }
+}

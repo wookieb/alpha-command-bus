@@ -1,0 +1,102 @@
+0 silly input []
+1 silly flags { _: [ 'bootstrap' ],
+1 silly flags   'reject-cycles': false,
+1 silly flags   rejectCycles: false,
+1 silly flags   args: [] }
+2 verbose rootPath /Users/wookieb/projects/wookieb/alpha-command-bus
+3 info version 2.5.1
+4 info versioning independent
+5 silly existsSync /Users/wookieb/projects/wookieb/alpha-command-bus/VERSION
+6 silly initialize attempt
+7 silly npmConfig { registry: undefined,
+7 silly npmConfig   npmClient: undefined,
+7 silly npmConfig   npmClientArgs: undefined,
+7 silly npmConfig   mutex: undefined }
+8 silly initialize success
+9 silly execute attempt
+10 info Bootstrapping 3 packages
+11 info lifecycle preinstall
+12 silly runScript preinstall alpha-command-bus-graphql
+13 silly alpha-command-bus-graphql
+14 silly runScript preinstall alpha-command-bus
+15 silly alpha-command-bus
+16 silly runScript preinstall alpha-command-bus-express
+17 silly alpha-command-bus-express
+18 silly hasMatchingDependency alpha-command-bus-express alpha-command-bus
+19 silly hasDependencyInstalled alpha-command-bus-express @types/express
+20 silly dependencyIsSatisfied [ '@types/express',
+20 silly dependencyIsSatisfied   '^4.0.39',
+20 silly dependencyIsSatisfied   '/Users/wookieb/projects/wookieb/alpha-command-bus/packages/express/node_modules' ]
+21 verbose dependencyIsSatisfied @types/express true
+22 silly hasDependencyInstalled alpha-command-bus-express express
+23 silly dependencyIsSatisfied [ 'express',
+23 silly dependencyIsSatisfied   '^0.11.7',
+23 silly dependencyIsSatisfied   '/Users/wookieb/projects/wookieb/alpha-command-bus/packages/express/node_modules' ]
+24 verbose dependencyIsSatisfied express false
+25 silly hasDependencyInstalled alpha-command-bus array-find
+26 silly dependencyIsSatisfied [ 'array-find',
+26 silly dependencyIsSatisfied   '^1.0.0',
+26 silly dependencyIsSatisfied   '/Users/wookieb/projects/wookieb/alpha-command-bus/packages/main/node_modules' ]
+27 verbose dependencyIsSatisfied array-find true
+28 silly hasDependencyInstalled alpha-command-bus lodash.matches
+29 silly dependencyIsSatisfied [ 'lodash.matches',
+29 silly dependencyIsSatisfied   '^4.6.0',
+29 silly dependencyIsSatisfied   '/Users/wookieb/projects/wookieb/alpha-command-bus/packages/main/node_modules' ]
+30 verbose dependencyIsSatisfied lodash.matches true
+31 silly hasDependencyInstalled alpha-command-bus reflect-metadata
+32 silly dependencyIsSatisfied [ 'reflect-metadata',
+32 silly dependencyIsSatisfied   '^0.1.10',
+32 silly dependencyIsSatisfied   '/Users/wookieb/projects/wookieb/alpha-command-bus/packages/main/node_modules' ]
+33 verbose dependencyIsSatisfied reflect-metadata true
+34 silly root dependencies []
+35 silly leaf dependencies {
+35 silly leaf dependencies   "alpha-command-bus-express": [
+35 silly leaf dependencies     {
+35 silly leaf dependencies       "dependency": "@types/express@^4.0.39",
+35 silly leaf dependencies       "isSatisfied": true
+35 silly leaf dependencies     },
+35 silly leaf dependencies     {
+35 silly leaf dependencies       "dependency": "express@^0.11.7",
+35 silly leaf dependencies       "isSatisfied": false
+35 silly leaf dependencies     }
+35 silly leaf dependencies   ],
+35 silly leaf dependencies   "alpha-command-bus": [
+35 silly leaf dependencies     {
+35 silly leaf dependencies       "dependency": "array-find@^1.0.0",
+35 silly leaf dependencies       "isSatisfied": true
+35 silly leaf dependencies     },
+35 silly leaf dependencies     {
+35 silly leaf dependencies       "dependency": "lodash.matches@^4.6.0",
+35 silly leaf dependencies       "isSatisfied": true
+35 silly leaf dependencies     },
+35 silly leaf dependencies     {
+35 silly leaf dependencies       "dependency": "reflect-metadata@^0.1.10",
+35 silly leaf dependencies       "isSatisfied": true
+35 silly leaf dependencies     }
+35 silly leaf dependencies   ]
+35 silly leaf dependencies }
+36 info Installing external dependencies
+37 verbose actions 1 actions, concurrency 4
+38 silly installInDir express [ '@types/express@^4.0.39', 'express@^0.11.7' ]
+39 silly installInDir backup /Users/wookieb/projects/wookieb/alpha-command-bus/packages/express/package.json
+40 silly rename [ '/Users/wookieb/projects/wookieb/alpha-command-bus/packages/express/package.json',
+40 silly rename   '/Users/wookieb/projects/wookieb/alpha-command-bus/packages/express/package.json.lerna_backup' ]
+41 silly installInDir writing tempJson { dependencies: { '@types/express': '^4.0.39', express: '^0.11.7' } }
+42 silly getExecOpts { cwd: '/Users/wookieb/projects/wookieb/alpha-command-bus/packages/express' }
+43 silly installInDir [ 'npm', [ 'install' ] ]
+44 silly installInDir cleanup /Users/wookieb/projects/wookieb/alpha-command-bus/packages/express/package.json
+45 silly renameSync [ '/Users/wookieb/projects/wookieb/alpha-command-bus/packages/express/package.json.lerna_backup',
+45 silly renameSync   '/Users/wookieb/projects/wookieb/alpha-command-bus/packages/express/package.json' ]
+46 verbose installed leaf alpha-command-bus-express
+47 error execute callback with error
+48 error Error: Command failed: npm install
+48 error npm ERR! code ETARGET
+48 error npm ERR! notarget No matching version found for express@^0.11.7
+48 error npm ERR! notarget In most cases you or one of your dependencies are requesting
+48 error npm ERR! notarget a package version that doesn't exist.
+48 error
+48 error npm ERR! A complete log of this run can be found in:
+48 error npm ERR!     /Users/wookieb/.npm/_logs/2017-11-19T21_30_25_622Z-debug.log
+48 error
+48 error     at Promise.all.then.arr (/Users/wookieb/.nvm/versions/node/v8.7.0/lib/node_modules/lerna/node_modules/execa/index.js:236:11)
+48 error     at <anonymous>
