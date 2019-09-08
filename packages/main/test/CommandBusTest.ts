@@ -124,7 +124,7 @@ describe('CommandBus', () => {
         it('simple wrapper middleware', async () => {
             const middleware = sinon.stub()
                 .callsFake((command: Command, next: Function) => {
-                    return next();
+                    return next(command);
                 });
 
             commandBus.use(middleware);

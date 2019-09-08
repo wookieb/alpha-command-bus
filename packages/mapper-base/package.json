@@ -1,0 +1,15 @@
+{
+  "name": "alpha-command-bus-mapper-base",
+  "version": "0.1.0",
+  "description": "Base mapper for alpha-command-bus command mappers",
+  "main": "compiled/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Łukasz Kużyński <lukasz.kuzynski@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wookieb/alpha-command-bus/issues"
+  },
+  "homepage": "https://github.com/wookieb/alpha-command-bus#readme"
+}

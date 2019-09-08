@@ -1,8 +1,9 @@
 {
   "name": "alpha-command-bus-express",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Express.js mapper to command bus",
   "main": "compiled/index.js",
+  "types": "compiled/index.d.ts",
   "scripts": {
     "test": "../../node_modules/.bin/mocha -r ts-node/register test/**/*Test.ts",
     "test:coverage": "../../node_modules/.bin/nyc npm test",

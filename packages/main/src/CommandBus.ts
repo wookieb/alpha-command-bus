@@ -3,7 +3,7 @@ import {Command} from "./Command";
 const matchesObject = require('lodash.matches');
 const find = require('array-find');
 
-export type Middleware = (command: Command, next: () => Promise<any>) => Promise<any> | any
+export type Middleware = (command: Command, next: (command: Command) => Promise<any>) => Promise<any> | any
 export type CommandHandlerFunc = (command: Command) => Promise<any> | any;
 export type CommandPredicate = (command: Command) => boolean;
 
@@ -76,7 +76,7 @@ export class CommandBus {
      */
     async handle(command: Command): Promise<any> {
         let currentMiddleware = 0;
-        const next = async (): Promise<any> => {
+        const next = async (command: Command): Promise<any> => {
             const middleware = this.middlewares[currentMiddleware++];
 
             if (middleware) {
@@ -86,7 +86,7 @@ export class CommandBus {
             }
         };
 
-        return await next();
+        return await next(command);
     }
 
 
