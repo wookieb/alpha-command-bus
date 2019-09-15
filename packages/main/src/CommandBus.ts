@@ -1,7 +1,6 @@
 import {Command} from "./Command";
 
 const matchesObject = require('lodash.matches');
-const find = require('array-find');
 
 export type Middleware = (command: Command, next: (command: Command) => Promise<any>) => Promise<any> | any
 export type CommandHandlerFunc = (command: Command) => Promise<any> | any;
@@ -45,7 +44,6 @@ export class CommandBus {
 
             case typeof commandFilter === 'object':
                 return <CommandPredicate>matchesObject(commandFilter);
-
 
             case commandFilter instanceof Function:
                 return <CommandPredicate>commandFilter;
@@ -104,8 +102,7 @@ export class CommandBus {
     }
 
     private getCommandHandlerMapping(command: Command) {
-        return find(
-            this.commandHandlers,
+        return this.commandHandlers.find(
             ([predicate]: CommandHandlerMappingTuple) => predicate(command)
         );
     }

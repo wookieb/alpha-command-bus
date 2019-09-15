@@ -1,5 +1,4 @@
-import {BaseCommand, createCommand} from "../src/Command";
-import {assert} from 'chai';
+import {BaseCommand, createCommand} from "@src/Command";
 import * as sinon from 'sinon';
 
 describe('Command', () => {
@@ -9,26 +8,31 @@ describe('Command', () => {
 
         const command = createCommand(NAME, {arg: 1});
 
-        assert.deepEqual(command, <any>{
-            command: NAME,
-            arg: 1
-        });
+        expect(command)
+            .toEqual({
+                command: NAME,
+                arg: 1
+            });
 
-        assert.isTrue(Object.isFrozen(command));
+        expect(Object.isFrozen(command))
+            .toBeTruthy();
     });
 
     it('Base command', () => {
         const command = new BaseCommand(NAME);
 
-        assert.deepEqual(command, <any>{
-            command: NAME
-        });
+        expect(command)
+            .toEqual({
+                command: NAME
+            });
 
-        assert.isFalse(Object.isFrozen(command));
+        expect(Object.isFrozen(command))
+            .toBeFalsy();
 
         command.freeze();
 
-        assert.isTrue(Object.isFrozen(command));
+        expect(Object.isFrozen(command))
+            .toBeTruthy();
     });
 });
 

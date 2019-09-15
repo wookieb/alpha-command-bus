@@ -1,6 +1,5 @@
-import {CommandBus} from "../src/CommandBus";
-import {assert} from 'chai';
-import {Command, createCommand} from "../src/Command";
+import {CommandBus} from "@src/CommandBus";
+import {Command, createCommand} from "@src/Command";
 import * as sinon from 'sinon';
 import {SinonStub} from "sinon";
 
@@ -28,22 +27,25 @@ describe('CommandBus', () => {
     });
 
     it('checking whether command has a handler', () => {
-        assert.isTrue(commandBus.hasCommandHandler(createCommand(COMMAND_NAME)));
-        assert.isFalse(commandBus.hasCommandHandler(createCommand('fake-command')));
+        expect(commandBus.hasCommandHandler(createCommand(COMMAND_NAME)))
+            .toBeTruthy();
+
+        expect(commandBus.hasCommandHandler(createCommand('fake-command')))
+            .toBeFalsy();
     });
 
 
     describe('handling command', () => {
         it('simple command', async () => {
             const result = await commandBus.handle(createCommand(COMMAND_NAME));
-            assert.strictEqual(result, RESULT);
+            expect(result)
+                .toStrictEqual(RESULT);
         });
 
         it('fails if no command handler registered', () => {
-            return assert.isRejected(
-                commandBus.handle(createCommand('test')),
-                /No command handler registered for command: test/
-            );
+            return expect(commandBus.handle(createCommand('test')))
+                .rejects
+                .toThrowError(/No command handler registered for command: test/)
         });
     });
 
@@ -57,15 +59,15 @@ describe('CommandBus', () => {
             const commandBus = new CommandBus();
             commandBus.registerCommandHandler(COMMAND_NAME, () => RESULT);
 
-            const result = await commandBus.handle(createCommand(COMMAND_NAME));
-            assert.strictEqual(result, RESULT);
+            expect(await commandBus.handle(createCommand(COMMAND_NAME)))
+                .toStrictEqual(RESULT);
         });
 
         it('object matching', async () => {
             const PROPERTY = 'propertyValue';
             commandBus.registerCommandHandler({command: COMMAND_NAME, property: PROPERTY}, () => RESULT);
             const result = await commandBus.handle(createCommand(COMMAND_NAME, {property: PROPERTY}));
-            assert.strictEqual(result, RESULT);
+            expect(result).toStrictEqual(RESULT);
         });
 
         it('custom predicate', async () => {
@@ -74,13 +76,13 @@ describe('CommandBus', () => {
             commandBus.registerCommandHandler((command: Command) => (<any>command).property === PROPERTY, () => RESULT);
 
             const result = await commandBus.handle(createCommand(COMMAND_NAME, {property: PROPERTY}));
-            assert.strictEqual(result, RESULT);
+            expect(result).toStrictEqual(RESULT);
         });
 
         it('throws an error if command name is not a function, string or an object', () => {
-            assert.throws(() => {
+            expect(() => {
                 commandBus.registerCommandHandler(<any>true, () => RESULT)
-            }, 'Command predicate has to be a function, a string or an object');
+            }).toThrowError('Command predicate has to be a function, a string or an object');
         });
 
         describe('multiple mappings at a time', () => {
@@ -96,8 +98,8 @@ describe('CommandBus', () => {
                     [COMMAND_2]: HANDLER
                 });
 
-                assert.strictEqual(await commandBus.handle(createCommand(COMMAND_1)), COMMAND_1);
-                assert.strictEqual(await commandBus.handle(createCommand(COMMAND_2)), COMMAND_2);
+                expect(await commandBus.handle(createCommand(COMMAND_1))).toStrictEqual(COMMAND_1);
+                expect(await commandBus.handle(createCommand(COMMAND_2))).toStrictEqual(COMMAND_2);
             });
 
             it('as a map', async () => {
@@ -113,8 +115,8 @@ describe('CommandBus', () => {
                 ]);
 
                 commandBus.registerCommandHandlers(mappings);
-                assert.strictEqual(await commandBus.handle(createCommand(COMMAND_1)), COMMAND_1);
-                assert.strictEqual(await commandBus.handle(createCommand(COMMAND_2)), COMMAND_2);
+                expect(await commandBus.handle(createCommand(COMMAND_1))).toStrictEqual(COMMAND_1);
+                expect(await commandBus.handle(createCommand(COMMAND_2))).toStrictEqual(COMMAND_2);
             })
         });
     });
@@ -130,7 +132,7 @@ describe('CommandBus', () => {
             commandBus.use(middleware);
 
             const result = await commandBus.handle(createCommand(COMMAND_NAME));
-            assert.strictEqual(result, RESULT);
+            expect(result).toStrictEqual(RESULT);
 
             assertMiddlewareCalled(middleware);
         });
@@ -149,7 +151,7 @@ describe('CommandBus', () => {
 
             const result = await commandBus.handle(createCommand(COMMAND_NAME));
 
-            assert.strictEqual(result, MIDDLEWARE_RESULT);
+            expect(result).toStrictEqual(MIDDLEWARE_RESULT);
             assertMiddlewareCalled(middleware);
             sinon.assert.notCalled(commandHandler);
         });
