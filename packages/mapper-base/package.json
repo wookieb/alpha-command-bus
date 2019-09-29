@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus-mapper-base",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Base mapper for alpha-command-bus command mappers",
   "main": "compiled/index.js",

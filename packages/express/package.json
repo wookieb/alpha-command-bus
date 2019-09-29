@@ -28,8 +28,8 @@
     "@types/express": "^4.0.39"
   },
   "peerDependencies": {
-    "express": "^4.16.2",
-    "alpha-command-bus": "^0.2.5"
+    "alpha-command-bus": "^0.2.5",
+    "express": "^4.16.2"
   },
   "devDependencies": {
     "alpha-command-bus": "^0.2.5",
