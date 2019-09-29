@@ -33,7 +33,7 @@ describe('decorators', () => {
     it('throws an error if decorated property is not a function', () => {
         expect(() => {
             const container = new ExampleCommandsHandlerContainer();
-            container.handler2 = <any>'test';
+            container.handler2 = 'test' as any;
 
             getCommandHandlers(container);
         })

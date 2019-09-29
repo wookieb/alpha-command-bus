@@ -43,10 +43,10 @@ export class CommandBus {
                 return (c: Command) => c.command === commandName;
 
             case typeof commandFilter === 'object':
-                return <CommandPredicate>matchesObject(commandFilter);
+                return matchesObject(commandFilter) as CommandPredicate;
 
             case commandFilter instanceof Function:
-                return <CommandPredicate>commandFilter;
+                return commandFilter as CommandPredicate;
 
             default:
                 throw new Error('Command predicate has to be a function, a string or an object');

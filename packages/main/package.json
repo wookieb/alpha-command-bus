@@ -1,35 +1,35 @@
 {
-    "name": "alpha-command-bus",
-    "version": "0.4.0",
-    "description": "Very simple command bus implementation",
-    "main": "compiled/index.js",
-    "types": "compiled/index.d.ts",
-    "scripts": {
-        "test": "../../node_modules/.bin/pallad-scripts test",
-        "compile": "../../node_modules/.bin/pallad-scripts compile",
-        "lint": "../../node_modules/.bin/pallad-scripts lint",
-        "prepack": "npm run compile"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/wookieb/alpha-command-bus.git"
-    },
-    "keywords": [
-        "command-bus",
-        "cqrs",
-        "command"
-    ],
-    "files": [
-        "compiled"
-    ],
-    "author": "Łukasz Kużyński <lukasz.kuzynski@gmail.com>",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/wookieb/alpha-command-bus/issues"
-    },
-    "homepage": "https://github.com/wookieb/alpha-command-bus#readme",
-    "dependencies": {
-        "lodash.matches": "^4.6.0",
-        "reflect-metadata": "^0.1.10"
-    }
+  "name": "alpha-command-bus",
+  "version": "0.4.0",
+  "description": "Very simple command bus implementation",
+  "main": "compiled/index.js",
+  "types": "compiled/index.d.ts",
+  "scripts": {
+    "test": "../../node_modules/.bin/pallad-scripts test",
+    "compile": "../../node_modules/.bin/pallad-scripts compile",
+    "lint": "../../node_modules/.bin/pallad-scripts lint",
+    "prepack": "npm run compile"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wookieb/alpha-command-bus.git"
+  },
+  "keywords": [
+    "command-bus",
+    "cqrs",
+    "command"
+  ],
+  "files": [
+    "compiled"
+  ],
+  "author": "Łukasz Kużyński <lukasz.kuzynski@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wookieb/alpha-command-bus/issues"
+  },
+  "homepage": "https://github.com/wookieb/alpha-command-bus#readme",
+  "dependencies": {
+    "lodash.matches": "^4.6.0",
+    "reflect-metadata": "^0.1.10"
+  }
 }

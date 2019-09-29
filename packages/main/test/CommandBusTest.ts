@@ -73,7 +73,7 @@ describe('CommandBus', () => {
         it('custom predicate', async () => {
             const PROPERTY = 'propertyValue';
 
-            commandBus.registerCommandHandler((command: Command) => (<any>command).property === PROPERTY, () => RESULT);
+            commandBus.registerCommandHandler((command: Command) => (command as any).property === PROPERTY, () => RESULT);
 
             const result = await commandBus.handle(createCommand(COMMAND_NAME, {property: PROPERTY}));
             expect(result).toStrictEqual(RESULT);
@@ -81,7 +81,7 @@ describe('CommandBus', () => {
 
         it('throws an error if command name is not a function, string or an object', () => {
             expect(() => {
-                commandBus.registerCommandHandler(<any>true, () => RESULT)
+                commandBus.registerCommandHandler(true as any, () => RESULT)
             }).toThrowError('Command predicate has to be a function, a string or an object');
         });
 

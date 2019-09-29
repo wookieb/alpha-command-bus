@@ -10,7 +10,7 @@ export interface CommandHandlerObjectEntry {
 }
 
 interface CommandBusClassMetadata {
-    methods: { commandPredicate: CommandPredicate, method: string }[]
+    methods: Array<{ commandPredicate: CommandPredicate, method: string }>
 }
 
 export function CommandHandler(commandFilter: CommandFilter) {
@@ -44,7 +44,7 @@ export function getCommandHandlers(object: { [method: string]: any | CommandHand
         return [];
     }
 
-    return metadata.methods.map((entry) => {
+    return metadata.methods.map(entry => {
         const method = object[entry.method];
         if (!(method instanceof Function)) {
             throw new Error(`Property "${entry.method}" has to be a method`);

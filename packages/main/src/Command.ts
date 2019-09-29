@@ -6,7 +6,11 @@ export interface Command {
  * Simple helper to create immutable commands
  */
 export function createCommand<T extends object = object>(commandName: string, extraProperties?: T): Readonly<Command & T> {
-    return Object.freeze(Object.assign({}, extraProperties, {command: commandName}));
+    // tslint:disable-next-line:no-object-literal-type-assertion
+    return Object.freeze({
+        ...(extraProperties || {}),
+        command: commandName
+    } as Command & T);
 }
 
 /**
