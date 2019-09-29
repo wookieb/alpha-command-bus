@@ -1,41 +1,78 @@
-import {Serializer, serializer} from "alpha-serializer";
-import {GotInstance, extend as gotExtend, GotOptions, GotFn} from 'got';
+import {Serializer, serializer as _serializer} from "alpha-serializer";
+import fetch, {Headers, RequestInfo, RequestInit} from 'node-fetch';
+import {Middleware} from "./Middleware";
 
-export class Client {
-    private got: GotInstance<GotFn>;
+export interface Command {
+    command: string;
+}
 
+export class Client<TContext extends Client.Context = Client.Context> {
     private serializer: Serializer;
 
-    constructor(private url: string, options: Client.Options = {}) {
-        this.got = gotExtend({
-            ...options.clientOptions,
-            baseUrl: this.url,
-            responseType: 'text',
-            handlers: [
-                async (options: any, next: (options: any) => any) => {
-                    options.body = this.serializer.serialize(options.command);
+    private middlewares: Array<Middleware<TContext>> = [];
 
-                    const result = await next(options);
+    constructor(private url: string, serializer?: Serializer) {
+        this.serializer = serializer || _serializer;
+        this.middlewares.push(
+            async (next, request) => {
+                request.init.body = this.serializer.serialize(request.context.command);
 
-                    return this.serializer.deserialize(result.body);
+                const result = await fetch(request.url, request.init);
+                if (result.status !== 200) {
+                    throw new Error(`Invalid response status: ${result.status}`);
                 }
-            ]
-        } as any);
 
-        this.serializer = options.serializer || serializer;
+                const body = await result.text();
+                const deserialized = this.serializer.deserialize(body);
+                if (result.headers.get('X-command-bus-error') === '1') {
+                    throw deserialized;
+                }
+                return deserialized;
+            }
+        )
     }
 
-    handle<T>(command: { command: string }, options: GotOptions<any> = {}): Promise<T> {
-        return this.got('/', {
-            ...options,
-            command: command,
-        } as any) as any as Promise<T>;
+    use(...middlewares: Array<Middleware<TContext>>): this {
+        this.middlewares.unshift(...middlewares);
+        return this;
+    }
+
+    async handle<T>(command: Command, contextData?: Record<any, any>): Promise<T> {
+        let currentMiddleware = 0;
+
+        // make a copy to prevent changing the chain during execution
+        const middlewares = this.middlewares.slice();
+        const request: Client.Request<TContext> = {
+            url: this.url,
+            init: {
+                method: 'post',
+                headers: new Headers({
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                })
+            },
+            // tslint:disable-next-line:no-object-literal-type-assertion
+            context: {
+                command
+            } as TContext
+        };
+
+        const next = (request: Client.Request<TContext>) => {
+            let nextMiddleware = middlewares[++currentMiddleware];
+            return nextMiddleware(next, request);
+        };
+        return this.middlewares[0](next, request) as any as T;
     }
 }
 
 export namespace Client {
-    export interface Options {
-        serializer?: Serializer;
-        clientOptions?: GotOptions<string | null>
+    export interface Request<T extends Context = Context> {
+        url: RequestInfo;
+        init: RequestInit;
+        context: T;
+    }
+
+    export interface Context {
+        command: Command;
     }
 }

@@ -79,12 +79,11 @@ export class CommandBus {
 
             if (middleware) {
                 return middleware(command, next);
-            } else {
-                return this.runCommandHandler(command);
             }
+            return this.runCommandHandler(command);
         };
 
-        return await next(command);
+        return next(command);
     }
 
 

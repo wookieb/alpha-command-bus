@@ -22,11 +22,13 @@
     "express"
   ],
   "dependencies": {
+    "@straw-hat/fetcher": "^2.5.0",
+    "@types/node-fetch": "^2.5.2",
     "alpha-serializer": "^0.4.1",
-    "got": "^9.6.0",
-    "@types/got": "^9.6.7"
+    "node-fetch": "^2.6.0"
   },
   "devDependencies": {
+    "@types/nock": "^11.1.0",
     "nock": "^11.3.4"
   }
 }
