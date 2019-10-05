@@ -16,10 +16,13 @@ export function rpcServer(commandBus: CommandBus, options: Options = {}) {
 
         let command: Command;
         try {
-            if (is.string(req.body)) {
-                command = serializer.deserialize(req.body);
+            const body = req.body;
+            if (is.string(body)) {
+                command = serializer.deserialize(body);
+            } else if (Buffer.isBuffer(body)) {
+                command = serializer.deserialize((body as Buffer).toString('utf8'));
             } else {
-                command = serializer.normalizer.denormalize(req.body);
+                command = serializer.normalizer.denormalize(body);
             }
         } catch (e) {
             throw boom.badRequest(`Cannot deserialize body: ${e.message}`);
