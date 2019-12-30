@@ -3,15 +3,15 @@ import {Command} from "./Command";
 const matchesObject = require('lodash.matches');
 
 export type Middleware = (command: Command, next: (command: Command) => Promise<any>) => Promise<any> | any
-export type CommandHandlerFunc = (command: Command) => Promise<any> | any;
-export type CommandPredicate = (command: Command) => boolean;
+export type CommandHandlerFunc<T extends Command = Command> = (command: T) => Promise<any> | any;
+export type CommandPredicate<T extends Command = Command> = (command: T) => boolean;
 
 /**
  * Possible input types for command mapping: CommandFilter => CommandHandlerFunc
  */
 export type CommandFilter = string | object | CommandPredicate;
 
-type CommandHandlerMappingTuple = [CommandPredicate, CommandHandlerFunc];
+type CommandHandlerMappingTuple = [CommandPredicate, CommandHandlerFunc<any>];
 
 export class CommandBus {
 
@@ -29,7 +29,7 @@ export class CommandBus {
     /**
      * Register command handler - a function responsible for handling a command
      */
-    registerCommandHandler(command: CommandFilter, handler: CommandHandlerFunc): this {
+    registerCommandHandler<T extends Command>(command: CommandFilter, handler: CommandHandlerFunc<T>): this {
 
         const commandPredicate = CommandBus.commandFilterToPredicate(command);
         this.commandHandlers.push([commandPredicate, handler]);
