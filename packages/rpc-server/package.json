@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus-rpc-server",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "RPC server over http for alpha-command-bus",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
@@ -27,7 +27,7 @@
   "devDependencies": {
     "@types/express": "^4.17.1",
     "@types/hapi__boom": "^7.4.1",
-    "alpha-command-bus": "^0.4.1",
+    "alpha-command-bus": "^0.4.2",
     "express": "^4.17.1",
     "node-mocks-http": "^1.7.6"
   },
