@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus-rpc-server",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "RPC server over http for alpha-command-bus",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
@@ -25,7 +25,7 @@
     "alpha-command-bus": "1.*"
   },
   "devDependencies": {
-    "alpha-command-bus": "^1.0.0"
+    "alpha-command-bus": "^1.0.1"
   },
   "dependencies": {
     "@hapi/boom": "^7.4.3",
