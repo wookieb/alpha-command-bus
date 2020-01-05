@@ -50,7 +50,6 @@ export class Mapper {
                 } else {
                     await parentResultHandler(result, context);
                 }
-
             } catch (e) {
                 const localErrorHandler = (config && config.errorHandler);
                 const parentErrorHandler = (this.config && this.config.errorHandler) || DEFAULT_ERROR_HANDLER;
@@ -60,7 +59,6 @@ export class Mapper {
                 } else {
                     parentErrorHandler(e, context);
                 }
-
             }
         }
     }

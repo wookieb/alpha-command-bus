@@ -1,35 +1,28 @@
 import "reflect-metadata";
-import {CommandHandlerFunc, CommandBus, CommandFilter, CommandPredicate} from "./CommandBus";
-import {Command} from "./Command";
+import {CommandHandlerDescriptor} from "./CommandHandlerDescriptor";
+import * as is from 'predicates';
 
 const COMMAND_METADATA = Symbol('alpha-command-bus');
 
-export interface CommandHandlerObjectEntry {
-    commandPredicate: CommandPredicate,
-    commandHandler: (command: Command) => any
+interface Reference {
+    predicate: CommandHandlerDescriptor.Predicate<any>;
+    methodName: string;
 }
 
-interface CommandBusClassMetadata {
-    methods: Array<{ commandPredicate: CommandPredicate, method: string }>
-}
-
-export function CommandHandler(commandFilter: CommandFilter) {
-    return (target: any, method: string, descriptor: PropertyDescriptor) => {
-        ensureMetadata(target).methods.push({
-            commandPredicate: CommandBus.commandFilterToPredicate(commandFilter),
-            method
-        })
+export function CommandHandler(filter: CommandHandlerDescriptor.Filter<any>) {
+    return (target: any, methodName: string, descriptor: PropertyDescriptor) => {
+        ensureMetadata(target).push({
+            predicate: CommandHandlerDescriptor.filterToPredicate(filter),
+            methodName
+        });
     }
 }
 
-function ensureMetadata(target: Function): CommandBusClassMetadata {
+function ensureMetadata(target: Function): Reference[] {
     if (Reflect.hasMetadata(COMMAND_METADATA, target)) {
         return Reflect.getMetadata(COMMAND_METADATA, target);
     }
-
-    const metadata: CommandBusClassMetadata = {
-        methods: []
-    };
+    const metadata: Reference[] = [];
     Reflect.defineMetadata(COMMAND_METADATA, metadata, target);
     return metadata;
 }
@@ -37,22 +30,20 @@ function ensureMetadata(target: Function): CommandBusClassMetadata {
 /**
  * Returns command handlers registered with decorator in given object
  */
-export function getCommandHandlers(object: { [method: string]: any | CommandHandlerFunc }): CommandHandlerObjectEntry[] {
-    const metadata: CommandBusClassMetadata = Reflect.getMetadata(COMMAND_METADATA, object);
+export function getCommandHandlersFromObject(object: { [method: string]: any }): CommandHandlerDescriptor[] {
+    const references: Reference[] = Reflect.getMetadata(COMMAND_METADATA, object);
 
-    if (!metadata) {
+    if (!references || references.length === 0) {
         return [];
     }
 
-    return metadata.methods.map(entry => {
-        const method = object[entry.method];
-        if (!(method instanceof Function)) {
-            throw new Error(`Property "${entry.method}" has to be a method`);
-        }
+    return references.map(entry => {
+        const method = object[entry.methodName];
+        is.assert(Function, `Property "${entry.methodName}" has to be a method`)(method);
 
-        return {
-            commandPredicate: entry.commandPredicate,
-            commandHandler: method.bind(object)
-        };
+        return new CommandHandlerDescriptor(
+            entry.predicate,
+            method.bind(object)
+        );
     });
 }

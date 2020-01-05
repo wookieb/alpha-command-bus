@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus",
-  "version": "0.4.2",
+  "version": "1.0.0",
   "description": "Very simple command bus implementation",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
@@ -30,6 +30,7 @@
   "homepage": "https://github.com/wookieb/alpha-command-bus#readme",
   "dependencies": {
     "lodash.matches": "^4.6.0",
+    "predicates": "^2.0.3",
     "reflect-metadata": "^0.1.10"
   }
 }

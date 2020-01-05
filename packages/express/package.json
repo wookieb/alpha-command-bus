@@ -6,8 +6,11 @@
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
   "scripts": {
-    "test": "../../node_modules/.bin/mocha -r ts-node/register test/**/*Test.ts",
-    "test:coverage": "../../node_modules/.bin/nyc npm test"
+    "test": "../../node_modules/.bin/pallad-scripts test",
+    "lint": "../../node_modules/.bin/pallad-scripts lint",
+    "compiled": "../../node_modules/.bin/pallad-scripts compile",
+    "prepare": "npm run compile",
+    "prepublishOnly": "npm run compile"
   },
   "repository": {
     "type": "git",

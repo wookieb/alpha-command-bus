@@ -22,10 +22,10 @@
   },
   "homepage": "https://github.com/wookieb/alpha-command-bus#readme",
   "devDependencies": {
-    "alpha-command-bus": "^0.2.5"
+    "alpha-command-bus": "*"
   },
   "peerDependencies": {
-    "alpha-command-bus": "^0.2.5"
+    "alpha-command-bus": "1.*"
   },
   "dependencies": {
     "@types/graphql": "^0.11.7"

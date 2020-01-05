@@ -1,70 +1,27 @@
 import {Command} from "./Command";
+import {CommandHandlerDescriptor} from "./CommandHandlerDescriptor";
 
-const matchesObject = require('lodash.matches');
-
-export type Middleware = (command: Command, next: (command: Command) => Promise<any>) => Promise<any> | any
-export type CommandHandlerFunc<T extends Command = Command> = (command: T) => Promise<any> | any;
-export type CommandPredicate<T extends Command = Command> = (command: T) => boolean;
-
-/**
- * Possible input types for command mapping: CommandFilter => CommandHandlerFunc
- */
-export type CommandFilter = string | object | CommandPredicate;
-
-type CommandHandlerMappingTuple = [CommandPredicate, CommandHandlerFunc<any>];
 
 export class CommandBus {
-
-    private middlewares: Middleware[] = [];
-    private commandHandlers: CommandHandlerMappingTuple[] = [];
+    private middlewares: CommandBus.Middleware[] = [];
+    private commandHandlers: CommandHandlerDescriptor[] = [];
 
     /**
      * Registers middleware that wraps process of handling a command
      */
-    use(middleware: Middleware): this {
+    use(middleware: CommandBus.Middleware): this {
         this.middlewares.push(middleware);
         return this;
     }
 
-    /**
-     * Register command handler - a function responsible for handling a command
-     */
-    registerCommandHandler<T extends Command>(command: CommandFilter, handler: CommandHandlerFunc<T>): this {
-
-        const commandPredicate = CommandBus.commandFilterToPredicate(command);
-        this.commandHandlers.push([commandPredicate, handler]);
+    registerCommandHandler(descriptor: CommandHandlerDescriptor<any>): this {
+        this.commandHandlers.push(descriptor);
         return this;
     }
 
-    static commandFilterToPredicate(commandFilter: CommandFilter): CommandPredicate {
-        switch (true) {
-            case typeof commandFilter === 'string':
-                const commandName = commandFilter;
-                return (c: Command) => c.command === commandName;
-
-            case typeof commandFilter === 'object':
-                return matchesObject(commandFilter) as CommandPredicate;
-
-            case commandFilter instanceof Function:
-                return commandFilter as CommandPredicate;
-
-            default:
-                throw new Error('Command predicate has to be a function, a string or an object');
-        }
-    }
-
-    /**
-     * Registers multiple command handlers at a time
-     */
-    registerCommandHandlers(commandHandlers: Map<CommandFilter, CommandHandlerFunc> | { [commandName: string]: CommandHandlerFunc }): this {
-        if (commandHandlers instanceof Map) {
-            for (const [commandName, commandHandler] of commandHandlers) {
-                this.registerCommandHandler(commandName, commandHandler);
-            }
-        } else {
-            for (const commandName in commandHandlers) {
-                this.registerCommandHandler(commandName, commandHandlers[commandName]);
-            }
+    registerCommandHandlers(descriptors: Array<CommandHandlerDescriptor<any>>): this {
+        for (const descriptor of descriptors) {
+            this.registerCommandHandler(descriptor);
         }
         return this;
     }
@@ -88,21 +45,24 @@ export class CommandBus {
 
 
     hasCommandHandler(command: Command) {
-        return !!this.getCommandHandlerMapping(command);
+        return !!this.getCommandHandlerForCommand(command);
     }
 
     private runCommandHandler(command: Command) {
-        const commandHandlerMapping = this.getCommandHandlerMapping(command);
-        if (!commandHandlerMapping) {
+        const commandHandler = this.getCommandHandlerForCommand(command);
+        if (!commandHandler) {
             throw new Error(`No command handler registered for command: ${command.command}`);
         }
-
-        return commandHandlerMapping[1](command);
+        return commandHandler.func(command);
     }
 
-    private getCommandHandlerMapping(command: Command) {
+    private getCommandHandlerForCommand(command: Command): CommandHandlerDescriptor | undefined {
         return this.commandHandlers.find(
-            ([predicate]: CommandHandlerMappingTuple) => predicate(command)
+            ({predicate}) => predicate(command)
         );
     }
+}
+
+export namespace CommandBus {
+    export type Middleware<TCommand extends Command = Command> = (command: TCommand, next: (command: TCommand) => Promise<any>) => Promise<any> | any
 }
