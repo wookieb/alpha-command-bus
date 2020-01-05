@@ -1,0 +1,30 @@
+{
+  "name": "alpha-command-bus-module",
+  "version": "1.0.0",
+  "description": "Module for alpha-command-bus",
+  "main": "compiled/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "../../node_modules/.bin/pallad-scripts test",
+    "compile": "../../node_modules/.bin/pallad-scripts compile",
+    "lint": "../../node_modules/.bin/pallad-scripts lint",
+    "prepack": "npm run compile"
+  },
+  "peerDependencies": {
+    "@pallad/modules": "1.*",
+    "alpha-command-bus": "1.*",
+    "alpha-dic": "1.*"
+  },
+  "files": [
+    "compiled"
+  ],
+  "devDependencies": {
+    "@pallad/modules": "1.*",
+    "alpha-command-bus": "*",
+    "alpha-dic": "1.*"
+  },
+  "author": "Łukasz Kużyński <lukasz.kuzynski@gmail.com> (http://wookieb.pl)",
+  "license": "MIT"
+}
