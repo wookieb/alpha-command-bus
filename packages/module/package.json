@@ -3,6 +3,7 @@
   "version": "1.0.1",
   "description": "Module for alpha-command-bus",
   "main": "compiled/index.js",
+  "types": "compiled/index.d.ts",
   "directories": {
     "test": "test"
   },
