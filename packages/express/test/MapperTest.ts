@@ -1,13 +1,8 @@
 import {CommandBus} from 'alpha-command-bus';
-import {assert} from 'chai';
-import {Mapper} from "../src/Mapper";
 import * as sinon from 'sinon';
-import {SinonStub} from "sinon";
 import {Request, Response} from 'express';
-
-const MockRequest = require('mock-express-request');
-const MockResponse = require('mock-express-response');
-
+import {Mapper} from '@src/Mapper';
+import {createRequest, createResponse} from 'node-mocks-http';
 
 const COMMAND = Object.freeze({command: 'someCommandName'});
 const commandFactory = () => {
@@ -15,10 +10,9 @@ const commandFactory = () => {
 };
 
 describe('Mapper', () => {
-
-    let commandBus: CommandBus;
-    let request: Request;
-    let response: Response;
+    let commandBus: sinon.SinonStubbedInstance<CommandBus>;
+    let request: sinon.SinonStubbedInstance<Request>;
+    let response: sinon.SinonStubbedInstance<Response>;
 
     beforeEach(() => {
         commandBus = sinon.createStubInstance(CommandBus);
@@ -29,49 +23,34 @@ describe('Mapper', () => {
             request
         });
 
-        sinon.stub(response, 'status').returns(response);
-        sinon.stub(response, 'send').returns(response);
-    });
-
-    describe('constructor', () => {
-        it('requires commandBus to be defined', () => {
-            assert.throws(() => {
-                new Mapper(undefined);
-            }, /command bus must be defined/);
-        });
-
-        it('requires commandBus to be an instance of CommandBus', () => {
-            assert.throws(() => {
-                new Mapper(<CommandBus>{});
-            }, /be an instance of CommandBus/);
-        })
+        sinon.stub(response, 'status').returns(response as any as Response);
+        sinon.stub(response, 'send').returns(response as any as Response);
     });
 
     describe('result', () => {
-
         let result: any;
         beforeEach(() => {
             result = {some: 'extra', result: ':)'};
-            (<SinonStub>commandBus.handle)
+            commandBus.handle
                 .withArgs(COMMAND)
                 .returns(Promise.resolve(result));
         });
 
         it('by default sends to response just like this', async () => {
-            const mapper = new Mapper(commandBus);
+            const mapper = new Mapper(commandBus as any as CommandBus);
 
-            await mapper.map(commandFactory)(request, response);
+            await mapper.map(commandFactory)(request as any as Request, response as any as Response);
 
-            sinon.assert.calledWithMatch(<SinonStub>response.send, sinon.match.same(result));
+            sinon.assert.calledWithMatch(response.send, sinon.match.same(result));
         });
 
         it('uses object result handler if provided', async () => {
             const resultHandler = sinon.spy();
-            const mapper = new Mapper(commandBus, {
+            const mapper = new Mapper(commandBus as any as CommandBus, {
                 resultHandler
             });
 
-            await mapper.map(commandFactory)(request, response);
+            await mapper.map(commandFactory)(request as any as Request, response as any as Response);
 
             sinon.assert.calledWithMatch(
                 resultHandler,
@@ -86,9 +65,12 @@ describe('Mapper', () => {
 
         it('uses local result handler if provided', async () => {
             const resultHandler = sinon.spy();
-            const mapper = new Mapper(commandBus);
+            const mapper = new Mapper(commandBus as any as CommandBus);
 
-            await mapper.map(commandFactory, {resultHandler: resultHandler})(request, response);
+            await mapper.map(commandFactory, {resultHandler: resultHandler})(
+                request as any as Request,
+                response as any as Response
+            );
 
             sinon.assert.calledWithMatch(
                 resultHandler,
@@ -105,11 +87,14 @@ describe('Mapper', () => {
         it('users local result handler is provided and passes parent result handler reference', async () => {
             const resultHandler = sinon.spy();
             const parentResultHandler = sinon.spy();
-            const mapper = new Mapper(commandBus, {
+            const mapper = new Mapper(commandBus as any as CommandBus, {
                 resultHandler: parentResultHandler
             });
 
-            await mapper.map(commandFactory, {resultHandler: resultHandler})(request, response);
+            await mapper.map(commandFactory, {resultHandler: resultHandler})(
+                request as any as Request,
+                response as any as Response
+            );
 
             sinon.assert.calledWithMatch(
                 resultHandler,
@@ -130,27 +115,27 @@ describe('Mapper', () => {
         let error: Error;
         beforeEach(() => {
             error = new Error('test');
-            (<SinonStub>commandBus.handle)
+            commandBus.handle
                 .withArgs(COMMAND)
                 .returns(Promise.reject(error));
         });
 
         it('by default sends 500 with error', async () => {
-            const mapper = new Mapper(commandBus);
+            const mapper = new Mapper(commandBus as any as CommandBus);
 
-            await mapper.map(commandFactory)(request, response);
+            await mapper.map(commandFactory)(request as any as Request, response as any as Response);
 
-            sinon.assert.calledWith(<SinonStub>response.status, 500);
-            sinon.assert.calledWith(<SinonStub>response.send, error);
+            sinon.assert.calledWith(response.status, 500);
+            sinon.assert.calledWith(response.send, error);
         });
 
         it('uses object error handler if provided', async () => {
             const errorHandler = sinon.spy();
-            const mapper = new Mapper(commandBus, {
+            const mapper = new Mapper(commandBus as any as CommandBus, {
                 errorHandler
             });
 
-            await mapper.map(commandFactory)(request, response);
+            await mapper.map(commandFactory)(request as any as Request, response as any as Response);
 
             sinon.assert.calledWithMatch(
                 errorHandler,
@@ -165,9 +150,9 @@ describe('Mapper', () => {
 
         it('uses local error handler if provided', async () => {
             const errorHandler = sinon.spy();
-            const mapper = new Mapper(commandBus);
+            const mapper = new Mapper(commandBus as any as CommandBus);
 
-            await mapper.map(commandFactory, {errorHandler})(request, response);
+            await mapper.map(commandFactory, {errorHandler})(request as any as Request, response as any as Response);
 
             sinon.assert.calledWithMatch(
                 errorHandler,
@@ -184,11 +169,11 @@ describe('Mapper', () => {
         it('users local error handler is provided and passes parent error handler reference', async () => {
             const errorHandler = sinon.spy();
             const parentErrorHandler = sinon.spy();
-            const mapper = new Mapper(commandBus, {
+            const mapper = new Mapper(commandBus as any as CommandBus, {
                 errorHandler: parentErrorHandler
             });
 
-            await mapper.map(commandFactory, {errorHandler})(request, response);
+            await mapper.map(commandFactory, {errorHandler})(request as any as Request, response as any as Response);
 
             sinon.assert.calledWithMatch(
                 errorHandler,

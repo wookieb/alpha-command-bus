@@ -1,39 +1,25 @@
-import {Request, Response} from 'express';
+import * as express from 'express';
 import {Command, CommandBus} from 'alpha-command-bus';
-import * as assert from 'assert';
 
-export interface MappingContext {
-    request: Request,
-    command: Command,
-    response: Response
-}
 
-export type ResultHandler = (result: any, context: MappingContext, parentResultHandler?: ResultHandler) => any;
-export type ErrorHandler = (error: any, context: MappingContext, parentErrorHandler?: ErrorHandler) => any;
-
-export interface MapperConfig {
-    resultHandler: ResultHandler,
-    errorHandler: ErrorHandler
-}
-
-export const DEFAULT_RESULT_HANDLER = (result: any, context: MappingContext) => {
+export const DEFAULT_RESULT_HANDLER = (result: any, context: Mapper.Context) => {
     context.response.send(result);
 };
 
-export const DEFAULT_ERROR_HANDLER = (result: any, context: MappingContext) => {
+export const DEFAULT_ERROR_HANDLER = (result: any, context: Mapper.Context) => {
     context.response.status(500).send(result);
 };
 
 export class Mapper {
-    constructor(private commandBus: CommandBus, private config: Partial<MapperConfig> = {}) {
-        assert.ok(this.commandBus instanceof CommandBus, 'command bus must be defined and be an instance of CommandBus');
+    constructor(private commandBus: CommandBus, private config: Partial<Mapper.Config> = {}) {
+
     }
 
-    map(mapper: (req: Request) => Command, config?: Partial<MapperConfig>) {
-        return async (request: Request, response: Response) => {
+    map(mapper: (req: express.Request) => Command, config?: Partial<Mapper.Config>) {
+        return async (request: express.Request, response: express.Response) => {
             const command = mapper(request);
 
-            const context = {
+            const context: Mapper.Context = {
                 command,
                 request,
                 response
@@ -62,4 +48,26 @@ export class Mapper {
             }
         }
     }
+
+    static create(commandBus: CommandBus, config: Partial<Mapper.Config>) {
+        const mapper = new Mapper(commandBus, config);
+
+        return mapper.map.bind(mapper);
+    }
+}
+
+export namespace Mapper {
+    export interface Context {
+        request: express.Request,
+        command: Command,
+        response: express.Response
+    }
+
+    export interface Config {
+        resultHandler: ResultHandler,
+        errorHandler: ErrorHandler
+    }
+
+    export type ResultHandler = (result: any, context: Context, parentResultHandler?: ResultHandler) => any;
+    export type ErrorHandler = (error: any, context: Context, parentErrorHandler?: ErrorHandler) => any;
 }

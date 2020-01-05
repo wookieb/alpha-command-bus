@@ -8,10 +8,11 @@
   "scripts": {
     "test": "../../node_modules/.bin/pallad-scripts test",
     "lint": "../../node_modules/.bin/pallad-scripts lint",
-    "compiled": "../../node_modules/.bin/pallad-scripts compile",
-    "prepare": "npm run compile",
-    "prepublishOnly": "npm run compile"
+    "compile": "../../node_modules/.bin/pallad-scripts compile"
   },
+  "files": [
+    "compiled"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wookieb/alpha-command-bus.git"
@@ -31,28 +32,11 @@
     "@types/express": "^4.0.39"
   },
   "peerDependencies": {
-    "alpha-command-bus": "^0.2.5",
+    "alpha-command-bus": "1.*",
     "express": "^4.16.2"
   },
   "devDependencies": {
-    "alpha-command-bus": "^0.2.5",
-    "express": "^4.16.2",
-    "mock-express-request": "^0.2.0",
-    "mock-express-response": "^0.2.1"
-  },
-  "nyc": {
-    "include": [
-      "src/**/*.ts"
-    ],
-    "extension": [
-      ".ts"
-    ],
-    "requires": [
-      "ts-node/register"
-    ],
-    "reporter": [
-      "text",
-      "html"
-    ]
+    "alpha-command-bus": "*",
+    "express": "^4.16.2"
   }
 }
