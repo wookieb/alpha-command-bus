@@ -42,8 +42,11 @@ export class Module extends _Module<{ container: Container }> {
 
         const handlers = await container.getByAnnotation(commandHandlerAnnotation.PREDICATE);
         for (const handler of handlers) {
-            if (handler instanceof CommandHandlerDescriptor) {
-                descriptors.push(handler);
+            const handlersArray = Array.isArray(handler) ? handler : [handler];
+            for (const handler of handlersArray) {
+                if (handler instanceof CommandHandlerDescriptor) {
+                    descriptors.push(handler);
+                }
             }
         }
         return descriptors;

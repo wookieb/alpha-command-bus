@@ -14,8 +14,16 @@ export class CommandBus {
         return this;
     }
 
-    registerCommandHandler(descriptor: CommandHandlerDescriptor<any>): this {
-        this.commandHandlers.push(descriptor);
+    registerCommandHandler(filter: CommandHandlerDescriptor.Filter<any>, handler: CommandHandlerDescriptor.Func<any>): this;
+    registerCommandHandler(descriptor: CommandHandlerDescriptor<any>): this;
+    registerCommandHandler(filterOrDescriptor: CommandHandlerDescriptor<any> | CommandHandlerDescriptor.Filter<any>, handler?: CommandHandlerDescriptor.Func<any>): this {
+        if (filterOrDescriptor instanceof CommandHandlerDescriptor) {
+            this.commandHandlers.push(filterOrDescriptor);
+        } else {
+            this.commandHandlers.push(
+                CommandHandlerDescriptor.fromFilter(filterOrDescriptor, handler!)
+            );
+        }
         return this;
     }
 
