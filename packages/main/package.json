@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Very simple command bus implementation",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
