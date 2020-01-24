@@ -22,7 +22,7 @@
     "compiled"
   ],
   "devDependencies": {
-    "@pallad/modules": "1.*",
+    "@pallad/modules": "^1.2.0",
     "alpha-command-bus": "^1.0.2",
     "alpha-dic": "1.*"
   },

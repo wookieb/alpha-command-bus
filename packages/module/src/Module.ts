@@ -19,7 +19,7 @@ export class Module extends _Module<{ container: Container }> {
         }
     }
 
-    protected init(): void {
+    init(): void {
         if (this.config.initCommandBus) {
             this.registerAction(StandardActions.INITIALIZATION, context => {
                 context.container.definitionWithFactory(References.COMMAND_BUS, this.config.createCommandBus)
