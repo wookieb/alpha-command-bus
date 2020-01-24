@@ -27,5 +27,6 @@
     "alpha-dic": "1.*"
   },
   "author": "Łukasz Kużyński <lukasz.kuzynski@gmail.com> (http://wookieb.pl)",
-  "license": "MIT"
+  "license": "MIT",
+  "gitHead": "a4ced4cd835f271491d290e3be2b36c865a3e257"
 }
