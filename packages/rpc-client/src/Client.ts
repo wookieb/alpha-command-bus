@@ -23,7 +23,7 @@ export class Client<TContext extends Client.Context = Client.Context> {
                 }
 
                 const body = await result.text();
-                const deserialized = this.serializer.deserialize(body);
+                const deserialized = body === '' ? undefined : this.serializer.deserialize(body);
                 if (result.headers.get('X-command-bus-error') === '1') {
                     throw deserialized;
                 }
