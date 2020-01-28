@@ -53,6 +53,7 @@ export class Client<TContext extends Client.Context = Client.Context> {
             },
             // tslint:disable-next-line:no-object-literal-type-assertion
             context: {
+                ...(contextData || {}),
                 command
             } as TContext
         };
