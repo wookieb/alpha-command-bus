@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus-rpc-client",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Client for alpha-command-bus-rpc-server",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
