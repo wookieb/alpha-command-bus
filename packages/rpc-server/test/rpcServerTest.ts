@@ -4,19 +4,41 @@ import * as sinon from 'sinon';
 import {CommandBus} from "alpha-command-bus";
 import * as boom from '@hapi/boom';
 import * as express from 'express';
-import {DataNormalizer, Serializer} from "alpha-serializer";
+import {DataNormalizer, JSONAdapter, Serializer} from "alpha-serializer";
+import {RPCServerError} from "@src/RPCServerError";
 
 describe('rpcServer', () => {
 
     let commandBus: sinon.SinonStubbedInstance<CommandBus>;
-
+    let serializer: Serializer;
     const COMMAND = {command: 'example'};
 
     beforeEach(() => {
         commandBus = sinon.createStubInstance(CommandBus);
+
+        serializer = new Serializer(
+            new JSONAdapter(),
+            new DataNormalizer()
+        );
+
+        serializer.normalizer.registerNormalization({
+            clazz: Error,
+            name: 'Error',
+            normalizer(e) {
+                return {message: e.message, name: e.name};
+            }
+        });
+
+        serializer.normalizer.registerNormalization({
+            clazz: RPCServerError,
+            name: 'RPCServerError',
+            normalizer(e) {
+                return {message: e.message, name: e.name};
+            }
+        });
     });
 
-    function rpc(options: Options = {}) {
+    function rpc(options: Options = {serializer}) {
         return rpcServer(commandBus as any, options);
     }
 
@@ -53,17 +75,17 @@ describe('rpcServer', () => {
                 method: 'GET',
                 url: '/'
             });
+            const error = new RPCServerError('Missing body for command');
 
             const response = createResponse();
             const next = sinon.spy();
 
             await rpc()(request, response, next);
 
-            sinon.assert.calledWithMatch(next, sinon.match({
-                message: 'Missing body for command',
-                isBoom: true,
-                typeof: boom.badRequest
-            }));
+            assertNoErrorThrown(next);
+            assertErrorResponse(response);
+            expect(response._getData())
+                .toEqual(serializer.serialize(error));
         });
 
         it('body cannot be deserialized', async () => {
@@ -72,17 +94,17 @@ describe('rpcServer', () => {
                 url: '/',
                 body: 'some body' as any
             });
+            const error = new RPCServerError('Cannot deserialize body: Unexpected token s in JSON at position 0');
 
             const response = createResponse();
             const next = sinon.spy();
 
             await rpc()(request, response, next);
 
-            sinon.assert.calledWithMatch(next, sinon.match({
-                message: sinon.match(/^Cannot deserialize body.*/),
-                isBoom: true,
-                typeof: boom.badRequest
-            }));
+            assertNoErrorThrown(next);
+            assertErrorResponse(response);
+            expect(response._getData())
+                .toEqual(serializer.serialize(error));
         });
 
         it('body cannot be denormalized', async () => {
@@ -93,17 +115,17 @@ describe('rpcServer', () => {
                     test: {'@type': 'test', value: 'data'}
                 }
             });
+            const error = new RPCServerError('Cannot deserialize body: Missing normalization for type test');
 
             const response = createResponse();
             const next = sinon.spy();
 
             await rpc()(request, response, next);
 
-            sinon.assert.calledWithMatch(next, sinon.match({
-                message: sinon.match(/^Cannot deserialize body.*/),
-                isBoom: true,
-                typeof: boom.badRequest
-            }));
+            assertNoErrorThrown(next);
+            assertErrorResponse(response);
+            expect(response._getData())
+                .toEqual(serializer.serialize(error));
         });
 
         it('body does not look like command', async () => {
@@ -114,38 +136,26 @@ describe('rpcServer', () => {
                     test: 1
                 }
             });
+            const error = new RPCServerError('Request body does not look like a command object. Make sure you have sent proper command object');
 
             const response = createResponse();
             const next = sinon.spy();
-
             await rpc()(request, response, next);
 
-            sinon.assert.calledWithMatch(next, sinon.match({
-                message: 'Request body does not look like a command object. Make sure you have sent proper command object',
-                isBoom: true,
-                typeof: boom.badRequest
-            }));
+            // then
+            assertNoErrorThrown(next);
+            assertErrorResponse(response);
+            expect(response._getData())
+                .toEqual(serializer.serialize(error));
         })
     });
 
 
     describe('success', () => {
-
-        let serializer: sinon.SinonStubbedInstance<Serializer>;
-
         let server: ReturnType<typeof rpcServer>;
-
         beforeEach(() => {
-            serializer = sinon.createStubInstance(Serializer);
-
-            const normalizer = sinon.createStubInstance(DataNormalizer);
-            normalizer.normalize.returnsArg(0);
-            normalizer.denormalize.returnsArg(0);
-
-            serializer.normalizer = normalizer as any as DataNormalizer;
-
             server = rpc({
-                serializer: serializer as any as Serializer
+                serializer
             });
         });
 
@@ -166,10 +176,6 @@ describe('rpcServer', () => {
                 .withArgs(COMMAND)
                 .resolves(result);
 
-            serializer.serialize
-                .withArgs(result)
-                .returns(serializedResult);
-
             // when
             await server(request, response, next);
 
@@ -189,17 +195,12 @@ describe('rpcServer', () => {
             });
 
             const error = new Error('Example error');
-            const serializedError = JSON.stringify({error: 'message'});
             const response = createResponse();
             const next = sinon.spy();
 
             commandBus.handle
                 .withArgs(COMMAND)
                 .rejects(error);
-
-            serializer.serialize
-                .withArgs(error)
-                .returns(serializedError);
 
             // when
             await server(request, response, next);
@@ -208,7 +209,7 @@ describe('rpcServer', () => {
             assertNoErrorThrown(next);
             assertErrorResponse(response);
             expect(response._getData())
-                .toEqual(serializedError);
+                .toEqual(serializer.serialize(error));
         })
     });
 });

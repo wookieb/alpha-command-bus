@@ -28,7 +28,6 @@
     "alpha-command-bus": "^1.0.2"
   },
   "dependencies": {
-    "@hapi/boom": "^7.4.3",
     "alpha-serializer": "^0.4.1",
     "express-async-handler": "^1.1.4",
     "predicates": "^2.0.3"

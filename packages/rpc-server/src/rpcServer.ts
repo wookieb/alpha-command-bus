@@ -1,17 +1,17 @@
 import {CommandBus, Command} from "alpha-command-bus";
 import * as express from 'express';
 import {Serializer, serializer as ser} from "alpha-serializer";
-import * as boom from '@hapi/boom';
 import * as is from 'predicates';
 
 import asyncHandler = require('express-async-handler');
+import {RPCServerError} from "./RPCServerError";
 
 export function rpcServer(commandBus: CommandBus, options: Options = {}) {
     const serializer = options.serializer || ser;
 
     async function createCommandFromRequest(req: express.Request) {
         if (is.empty(req.body)) {
-            throw boom.badRequest('Missing body for command');
+            throw new RPCServerError('Missing body for command');
         }
 
         let command: Command;
@@ -25,11 +25,11 @@ export function rpcServer(commandBus: CommandBus, options: Options = {}) {
                 command = serializer.normalizer.denormalize(body);
             }
         } catch (e) {
-            throw boom.badRequest(`Cannot deserialize body: ${e.message}`);
+            throw new RPCServerError(`Cannot deserialize body: ${e.message}`);
         }
 
         if (!is.prop('command', String)(command)) {
-            throw boom.badRequest('Request body does not look like a command object. Make sure you have sent proper command object')
+            throw new RPCServerError('Request body does not look like a command object. Make sure you have sent proper command object')
         }
 
         if (options.prepareCommand) {
@@ -39,8 +39,8 @@ export function rpcServer(commandBus: CommandBus, options: Options = {}) {
     }
 
     return asyncHandler(async function (req: express.Request, res: express.Response) {
-        const command = await createCommandFromRequest(req);
         try {
+            const command = await createCommandFromRequest(req);
             const result = await commandBus.handle(command);
             res.status(200)
                 .header('Content-Type', 'application/json')
