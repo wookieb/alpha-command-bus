@@ -32,5 +32,6 @@
     "alpha-serializer": "0.5.*",
     "express-async-handler": "^1.1.4",
     "predicates": "^2.0.3"
-  }
+  },
+  "gitHead": "1cc5ac9dd76e999c784668236f08126e30e33c46"
 }
