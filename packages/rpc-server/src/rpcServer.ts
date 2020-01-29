@@ -4,14 +4,14 @@ import {Serializer, serializer as ser} from "alpha-serializer";
 import * as is from 'predicates';
 
 import asyncHandler = require('express-async-handler');
-import {RPCServerError} from "./RPCServerError";
+import {RemoteServerError} from "@pallad/common-errors";
 
 export function rpcServer(commandBus: CommandBus, options: Options = {}) {
     const serializer = options.serializer || ser;
 
     async function createCommandFromRequest(req: express.Request) {
         if (is.empty(req.body)) {
-            throw new RPCServerError('Missing body for command');
+            throw new RemoteServerError('Missing body for command');
         }
 
         let command: Command;
@@ -25,11 +25,11 @@ export function rpcServer(commandBus: CommandBus, options: Options = {}) {
                 command = serializer.normalizer.denormalize(body);
             }
         } catch (e) {
-            throw new RPCServerError(`Cannot deserialize body: ${e.message}`);
+            throw new RemoteServerError(`Cannot deserialize body: ${e.message}`);
         }
 
         if (!is.prop('command', String)(command)) {
-            throw new RPCServerError('Request body does not look like a command object. Make sure you have sent proper command object')
+            throw new RemoteServerError('Request body does not look like a command object. Make sure you have sent proper command object')
         }
 
         if (options.prepareCommand) {

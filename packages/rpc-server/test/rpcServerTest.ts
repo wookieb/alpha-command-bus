@@ -2,10 +2,9 @@ import {createRequest, createResponse, MockResponse} from 'node-mocks-http';
 import {rpcServer, Options} from "@src/rpcServer";
 import * as sinon from 'sinon';
 import {CommandBus} from "alpha-command-bus";
-import * as boom from '@hapi/boom';
 import * as express from 'express';
 import {DataNormalizer, JSONAdapter, Serializer} from "alpha-serializer";
-import {RPCServerError} from "@src/RPCServerError";
+import {RemoteServerError} from "@pallad/common-errors";
 
 describe('rpcServer', () => {
 
@@ -30,7 +29,7 @@ describe('rpcServer', () => {
         });
 
         serializer.normalizer.registerNormalization({
-            clazz: RPCServerError,
+            clazz: RemoteServerError,
             name: 'RPCServerError',
             normalizer(e) {
                 return {message: e.message, name: e.name};
@@ -75,7 +74,7 @@ describe('rpcServer', () => {
                 method: 'GET',
                 url: '/'
             });
-            const error = new RPCServerError('Missing body for command');
+            const error = new RemoteServerError('Missing body for command');
 
             const response = createResponse();
             const next = sinon.spy();
@@ -94,7 +93,7 @@ describe('rpcServer', () => {
                 url: '/',
                 body: 'some body' as any
             });
-            const error = new RPCServerError('Cannot deserialize body: Unexpected token s in JSON at position 0');
+            const error = new RemoteServerError('Cannot deserialize body: Unexpected token s in JSON at position 0');
 
             const response = createResponse();
             const next = sinon.spy();
@@ -115,7 +114,7 @@ describe('rpcServer', () => {
                     test: {'@type': 'test', value: 'data'}
                 }
             });
-            const error = new RPCServerError('Cannot deserialize body: Missing normalization for type test');
+            const error = new RemoteServerError('Cannot deserialize body: Missing normalization for type test');
 
             const response = createResponse();
             const next = sinon.spy();
@@ -136,7 +135,7 @@ describe('rpcServer', () => {
                     test: 1
                 }
             });
-            const error = new RPCServerError('Request body does not look like a command object. Make sure you have sent proper command object');
+            const error = new RemoteServerError('Request body does not look like a command object. Make sure you have sent proper command object');
 
             const response = createResponse();
             const next = sinon.spy();

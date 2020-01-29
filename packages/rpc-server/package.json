@@ -28,7 +28,8 @@
     "alpha-command-bus": "^1.0.2"
   },
   "dependencies": {
-    "alpha-serializer": "^0.4.1",
+    "alpha-serializer": "0.5.*",
+    "@pallad/common-errors": "^1.1.1",
     "express-async-handler": "^1.1.4",
     "predicates": "^2.0.3"
   }
