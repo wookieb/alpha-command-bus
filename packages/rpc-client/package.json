@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus-rpc-client",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Client for alpha-command-bus-rpc-server",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
@@ -30,8 +30,8 @@
     "alpha-serializer": "0.5.*"
   },
   "devDependencies": {
-    "alpha-serializer": "0.5.*",
     "@types/nock": "^11.1.0",
+    "alpha-serializer": "0.5.*",
     "nock": "^11.3.4"
   }
 }
