@@ -24,10 +24,13 @@
   "dependencies": {
     "@straw-hat/fetcher": "^2.5.0",
     "@types/node-fetch": "^2.5.2",
-    "alpha-serializer": "^0.4.1",
     "node-fetch": "^2.6.0"
   },
+  "peerDependencies": {
+    "alpha-serializer": "0.5.*"
+  },
   "devDependencies": {
+    "alpha-serializer": "0.5.*",
     "@types/nock": "^11.1.0",
     "nock": "^11.3.4"
   }
