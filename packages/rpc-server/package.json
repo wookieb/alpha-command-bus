@@ -22,14 +22,14 @@
     "compiled"
   ],
   "peerDependencies": {
-    "alpha-command-bus": "1.*"
+    "alpha-command-bus": "1.*",
+    "alpha-serializer": "0.5.*"
   },
   "devDependencies": {
     "alpha-command-bus": "^1.0.2"
   },
   "dependencies": {
     "@pallad/common-errors": "^1.1.1",
-    "alpha-serializer": "0.5.*",
     "express-async-handler": "^1.1.4",
     "predicates": "^2.0.3"
   },
