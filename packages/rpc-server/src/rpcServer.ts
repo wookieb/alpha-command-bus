@@ -35,6 +35,8 @@ export function rpcServer(commandBus: CommandBus, options: Options = {}) {
         if (options.prepareCommand) {
             command = await options.prepareCommand(command, req);
         }
+
+        options?.onCommand && options.onCommand(command);
         return command;
     }
 
@@ -45,16 +47,21 @@ export function rpcServer(commandBus: CommandBus, options: Options = {}) {
             res.status(200)
                 .header('Content-Type', 'application/json')
                 .send(serializer.serialize(result));
+            options?.onResult && options.onResult(result);
         } catch (e) {
             res.status(200)
                 .header('X-command-bus-error', '1')
                 .header('Content-type', 'application/json')
                 .send(serializer.serialize(e));
+            options?.onError && options.onError(e);
         }
     })
 }
 
 export interface Options {
     serializer?: Serializer;
+    onResult?: (result: any) => void,
+    onError?: (error: Error) => void,
+    onCommand?: (command: Command) => void
     prepareCommand?: (command: Command, req: express.Request) => Promise<Command> | Command;
 }
