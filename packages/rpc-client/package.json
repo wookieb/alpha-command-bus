@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus-rpc-client",
-  "version": "1.9.9",
+  "version": "2.0.0",
   "description": "Client for alpha-command-bus-rpc-server",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
@@ -28,9 +28,9 @@
     "alpha-serializer": "0.5.*"
   },
   "dependencies": {
+    "@types/superagent": "^4.1.10",
     "predicates": "^2.0.3",
-    "superagent": "^6.1.0",
-    "@types/superagent": "^4.1.10"
+    "superagent": "^6.1.0"
   },
   "gitHead": "88197e3b1e6a6a6670ddd4b948d0ac7929c27c6c"
 }
