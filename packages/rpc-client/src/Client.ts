@@ -1,7 +1,7 @@
 import {Serializer, serializer as _serializer} from "alpha-serializer";
 import {Middleware} from "./Middleware";
 import superagent = require('superagent');
-import {Readable, Transform} from 'stream';
+import {Readable} from 'stream';
 import {isReadableStream} from './isReadableStream';
 import streamToPromise = require('stream-to-promise');
 

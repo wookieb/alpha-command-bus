@@ -29,7 +29,8 @@
   },
   "dependencies": {
     "predicates": "^2.0.3",
-    "superagent": "^6.1.0"
+    "superagent": "^6.1.0",
+    "@types/superagent": "^4.1.10"
   },
-  "gitHead": "90b41c867c9bb4292e98b3f8bfd04f5d4452bea7"
+  "gitHead": "88197e3b1e6a6a6670ddd4b948d0ac7929c27c6c"
 }

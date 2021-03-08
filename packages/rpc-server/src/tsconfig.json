@@ -6,10 +6,5 @@
   },
   "include": [
     "**/*"
-  ],
-  "references": [
-    {
-      "path": "../../rpc-common/src"
-    }
   ]
 }
