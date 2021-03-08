@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus-module",
-  "version": "2.0.0",
+  "version": "1.9.9",
   "description": "Module for alpha-command-bus",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
