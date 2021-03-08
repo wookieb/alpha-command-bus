@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus-module",
-  "version": "2.0.1",
+  "version": "1.9.9",
   "description": "Module for alpha-command-bus",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
@@ -27,5 +27,5 @@
   },
   "author": "Łukasz Kużyński <lukasz.kuzynski@gmail.com> (http://wookieb.pl)",
   "license": "MIT",
-  "gitHead": "a4ced4cd835f271491d290e3be2b36c865a3e257"
+  "gitHead": "90b41c867c9bb4292e98b3f8bfd04f5d4452bea7"
 }

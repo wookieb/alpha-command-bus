@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus-rpc-server",
-  "version": "2.0.1",
+  "version": "1.9.9",
   "description": "RPC server over http for alpha-command-bus",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
@@ -37,5 +37,5 @@
     "predicates": "^2.0.3",
     "type-is": "^1.6.18"
   },
-  "gitHead": "1cc5ac9dd76e999c784668236f08126e30e33c46"
+  "gitHead": "90b41c867c9bb4292e98b3f8bfd04f5d4452bea7"
 }
