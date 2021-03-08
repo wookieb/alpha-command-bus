@@ -22,12 +22,20 @@ export class Module extends _Module<{ container: Container }> {
     init(): void {
         if (this.config.initCommandBus) {
             this.registerAction(StandardActions.INITIALIZATION, context => {
-                context.container.definitionWithFactory(References.COMMAND_BUS, this.config.createCommandBus)
-                    .annotate(onActivation(async function (this: Container, service: CommandBus) {
-                        const commandHandlers = await Module.getCommandHandlersFromContainer(context.container);
-                        service.registerCommandHandlers(commandHandlers);
-                        return service;
-                    }))
+                context.container.definitionWithFactory(
+                    References.COMMAND_BUS,
+                    this.config.createCommandBus,
+                    CommandBus
+                )
+                    .annotate(
+                        onActivation(
+                            async function (this: Container, service: CommandBus) {
+                                const commandHandlers = await Module.getCommandHandlersFromContainer(context.container);
+                                service.registerCommandHandlers(commandHandlers);
+                                return service;
+                            }
+                        )
+                    )
             })
         }
     }
@@ -62,6 +70,4 @@ export namespace Module {
     export namespace Config {
         export type FromUser = Partial<Pick<Config, 'initCommandBus' | 'createCommandBus'>>;
     }
-
-
 }

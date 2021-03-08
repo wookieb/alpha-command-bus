@@ -1,9 +1,9 @@
-import {Annotation, Service} from "alpha-dic";
+import {Annotation, AutowiredService} from "alpha-dic";
 import {commandHandlerObjectAnnotation} from "./commandHandlerObjectAnnotation";
 
 export function CommandHandlerService() {
     return function (clazz: { new(...args: any[]): any }) {
-        Service()(clazz);
+        AutowiredService()(clazz);
         Annotation(commandHandlerObjectAnnotation())(clazz);
     }
 }

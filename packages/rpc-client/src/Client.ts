@@ -1,30 +1,37 @@
 import {Serializer, serializer as _serializer} from "alpha-serializer";
-import fetch, {Headers, RequestInfo, RequestInit} from 'node-fetch';
 import {Middleware} from "./Middleware";
+import superagent = require('superagent');
+import {Readable, Transform} from 'stream';
+import {isReadableStream} from './isReadableStream';
+import streamToPromise = require('stream-to-promise');
 
 export interface Command {
     command: string;
 }
 
-export class Client<TContext extends Client.Context = Client.Context> {
+export class Client<T extends {} = any> {
     private serializer: Serializer;
-
-    private middlewares: Array<Middleware<TContext>> = [];
+    private middlewares: Array<Middleware<T>> = [];
 
     constructor(private url: string, serializer?: Serializer) {
         this.serializer = serializer || _serializer;
         this.middlewares.push(
-            async (next, request) => {
-                request.init.body = this.serializer.serialize(request.context.command);
+            async (context, next) => {
 
-                const result = await fetch(request.url, request.init);
-                if (result.status !== 200) {
-                    throw new Error(`Invalid response status: ${result.status}`);
+                const response: superagent.Response = await context.request;
+                if (response.status !== 200) {
+                    throw new Error(`Invalid response status: ${response.status}`);
                 }
 
-                const body = await result.text();
-                const deserialized = body === '' ? undefined : this.serializer.deserialize(body);
-                if (result.headers.get('X-command-bus-error') === '1') {
+                const stream = (response as any).res;
+                if (response.get('content-type') === 'application/octet-stream') {
+                    return stream;
+                }
+
+                const contentBuffer: Buffer = await streamToPromise(stream)
+                const deserialized = contentBuffer.length === 0 ? undefined :
+                    this.serializer.deserialize(contentBuffer.toString('utf8'));
+                if (response.get('X-command-bus-error') === '1') {
                     throw deserialized;
                 }
                 return deserialized;
@@ -32,48 +39,74 @@ export class Client<TContext extends Client.Context = Client.Context> {
         )
     }
 
-    use(...middlewares: Array<Middleware<TContext>>): this {
+    use(...middlewares: Array<Middleware<T>>): this {
         this.middlewares.unshift(...middlewares);
         return this;
     }
 
-    async handle<T>(command: Command, contextData?: Record<any, any>): Promise<T> {
+    async handle<TResult>(command: Command, contextData: T): Promise<TResult> {
         let currentMiddleware = 0;
 
         // make a copy to prevent changing the chain during execution
         const middlewares = this.middlewares.slice();
-        const request: Client.Request<TContext> = {
-            url: this.url,
-            init: {
-                method: 'post',
-                headers: new Headers({
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json'
-                })
-            },
-            // tslint:disable-next-line:no-object-literal-type-assertion
-            context: {
-                ...(contextData || {}),
-                command
-            } as TContext
+
+        const request = superagent
+            .post(this.url)
+            .buffer(false)
+            .set('content-type', 'application/json')
+            .set('accept', 'application/json');
+
+        const commandData = this.getCommandData(command);
+
+        if ('files' in commandData) {
+            for (const [key, stream] of Object.entries(commandData.files)) {
+                request.attach(key, stream as any);
+            }
+
+            request.field('commandBody', this.serializer.serialize(commandData.command));
+        } else {
+            request.send(this.serializer.serialize(command));
+        }
+
+        const context: Client.Context<T> = {
+            context: contextData,
+            request: request,
+            command: command,
         };
 
-        const next = (request: Client.Request<TContext>) => {
+        const next = (context: Client.Context<T>) => {
             let nextMiddleware = middlewares[++currentMiddleware];
-            return nextMiddleware(next, request);
+            return nextMiddleware(context, next);
         };
-        return this.middlewares[0](next, request) as any as T;
+        return this.middlewares[0](context, next) as any as Promise<TResult>;
+    }
+
+    private getCommandData(command: Command): Command | { files: Record<string, Readable>, command: Record<string, any> } {
+        const files = Object.entries(command)
+            .filter(([, value]) => {
+                return isReadableStream(value);
+            });
+
+        if (files.length > 0) {
+            const filesKeys = new Set(files.map(x => x[0]));
+            return {
+                files: Object.fromEntries(files),
+                command: Object.fromEntries(
+                    Object.entries(command)
+                        .filter(([key]) => {
+                            return !filesKeys.has(key);
+                        })
+                )
+            };
+        }
+        return command;
     }
 }
 
 export namespace Client {
-    export interface Request<T extends Context = Context> {
-        url: RequestInfo;
-        init: RequestInit;
-        context: T;
-    }
-
-    export interface Context {
+    export interface Context<T extends {}> {
+        request: superagent.Request;
         command: Command;
+        context: T;
     }
 }

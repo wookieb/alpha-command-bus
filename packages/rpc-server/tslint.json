@@ -1,14 +1,6 @@
 {
   "extends": "@pallad/scripts/tslint.dist.json",
   "rules": {
-    "no-implicit-dependencies": [
-      true,
-      [
-        "sinon",
-        "express",
-        "node-mocks-http",
-        "@src"
-      ]
-    ]
+    "no-implicit-dependencies": false
   }
 }

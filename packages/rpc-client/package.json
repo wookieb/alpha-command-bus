@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus-rpc-client",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "description": "Client for alpha-command-bus-rpc-server",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
@@ -21,17 +21,14 @@
     "client",
     "express"
   ],
-  "dependencies": {
-    "@straw-hat/fetcher": "^2.5.0",
-    "@types/node-fetch": "^2.5.2",
-    "node-fetch": "^2.6.0"
-  },
   "peerDependencies": {
     "alpha-serializer": "0.5.*"
   },
   "devDependencies": {
-    "@types/nock": "^11.1.0",
-    "alpha-serializer": "0.5.*",
-    "nock": "^11.3.4"
+    "alpha-serializer": "0.5.*"
+  },
+  "dependencies": {
+    "predicates": "^2.0.3",
+    "superagent": "^6.1.0"
   }
 }

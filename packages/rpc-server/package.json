@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus-rpc-server",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "RPC server over http for alpha-command-bus",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
@@ -30,8 +30,12 @@
   },
   "dependencies": {
     "@pallad/common-errors": "^1.1.1",
+    "body-parser": "^1.19.0",
+    "busboy": "^0.3.1",
     "express-async-handler": "^1.1.4",
-    "predicates": "^2.0.3"
+    "predicates": "^2.0.3",
+    "alpha-serializer": "0.5.*",
+    "type-is": "^1.6.18"
   },
   "gitHead": "1cc5ac9dd76e999c784668236f08126e30e33c46"
 }

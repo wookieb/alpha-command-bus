@@ -1,11 +1,15 @@
 {
-    "extends": "@pallad/scripts/tsconfig-node.dist.json",
-    "compilerOptions": {
-        "rootDir": ".",
-        "outDir": "../compiled",
-        "composite": true
-    },
-    "include": [
-        "**/*"
-    ]
+  "extends": "@pallad/scripts/tsconfig-node.dist.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "../compiled",
+  },
+  "include": [
+    "**/*"
+  ],
+  "references": [
+    {
+      "path": "../../rpc-common/src"
+    }
+  ]
 }

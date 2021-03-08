@@ -3,7 +3,8 @@
     "compilerOptions": {
         "rootDir": ".",
         "outDir": "../compiled",
-        "composite": true
+        "composite": true,
+        "target": "es2019"
     },
     "include": [
         "**/*"

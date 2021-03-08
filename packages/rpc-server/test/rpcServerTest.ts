@@ -1,16 +1,29 @@
-import {createRequest, createResponse, MockResponse} from 'node-mocks-http';
-import {rpcServer, Options} from "@src/rpcServer";
+import {rpcServer,} from "@src/rpcServer";
 import * as sinon from 'sinon';
 import {CommandBus} from "alpha-command-bus";
 import * as express from 'express';
 import {DataNormalizer, JSONAdapter, Serializer} from "alpha-serializer";
 import {RemoteServerError} from "@pallad/common-errors";
+import request = require('supertest');
+import {Readable} from 'stream';
+import {ReadableStreamBuffer} from 'stream-buffers';
+import * as fs from 'fs';
+import * as path from 'path';
+import streamToPromise = require('stream-to-promise');
 
 describe('rpcServer', () => {
-
     let commandBus: sinon.SinonStubbedInstance<CommandBus>;
     let serializer: Serializer;
+    let server: express.Application;
     const COMMAND = {command: 'example'};
+
+    const BUFFER = Buffer.from('Croire note public membre avoir petit mais.', 'utf8');
+    const OBJECTS = [
+        {sen: 'Move prepare thus ahead best herself.'},
+        {sen: 'Comme inquiétude lequel dehors or.'},
+        {sen: 'Quand toit pleurer cour oui second.'},
+        {sen: 'Aspernatur tempora aliquid porro laboriosam illo.'}
+    ];
 
     beforeEach(() => {
         commandBus = sinon.createStubInstance(CommandBus);
@@ -35,180 +48,164 @@ describe('rpcServer', () => {
                 return {message: e.message, name: e.name};
             }
         });
+
+        server = express();
+        server.use(rpcServer(commandBus as any, {
+            serializer
+        }));
     });
 
-    function rpc(options: Options = {serializer}) {
-        return rpcServer(commandBus as any, options);
-    }
-
-    function assertSuccessResponse(response: MockResponse<express.Response>) {
-        expect(response.header('Content-Type'))
-            .toEqual('application/json');
-        expect(response.header('X-command-bus-error'))
-            .toBeUndefined();
-        expect(response)
-            .toHaveProperty('statusCode', 200);
-    }
-
-    function assertErrorResponse(response: MockResponse<express.Response>) {
-        expect(response.header('Content-Type'))
-            .toEqual('application/json');
-        expect(response.header('X-command-bus-error'))
-            .toEqual('1');
-        expect(response)
-            .toHaveProperty('statusCode', 200);
-    }
-
-    function assertNoErrorThrown(next: sinon.SinonSpy) {
-        sinon.assert.notCalled(next);
-    }
-
     describe('throws error if', () => {
-
         afterEach(() => {
             sinon.assert.notCalled(commandBus.handle);
         });
 
         it('request body is missing', async () => {
-            const request = createRequest({
-                method: 'GET',
-                url: '/'
-            });
             const error = new RemoteServerError('Missing body for command');
 
-            const response = createResponse();
-            const next = sinon.spy();
+            const response = await request(server)
+                .get('/')
+                .set('content-type', 'application/json')
+                .expect(200);
 
-            await rpc()(request, response, next);
-
-            assertNoErrorThrown(next);
-            assertErrorResponse(response);
-            expect(response._getData())
-                .toEqual(serializer.serialize(error));
+            expect(serializer.normalizer.denormalize(response.body))
+                .toEqual(error);
         });
 
         it('body cannot be deserialized', async () => {
-            const request = createRequest({
-                method: 'POST',
-                url: '/',
-                body: 'some body' as any
-            });
             const error = new RemoteServerError('Cannot deserialize body: Unexpected token s in JSON at position 0');
 
-            const response = createResponse();
-            const next = sinon.spy();
+            const response = await request(server)
+                .post('/')
+                .set('content-type', 'application/json')
+                .send('some body')
+                .expect(200);
 
-            await rpc()(request, response, next);
-
-            assertNoErrorThrown(next);
-            assertErrorResponse(response);
-            expect(response._getData())
-                .toEqual(serializer.serialize(error));
+            expect(serializer.normalizer.denormalize(response.body))
+                .toEqual(error);
         });
 
         it('body cannot be denormalized', async () => {
-            const request = createRequest({
-                method: 'POST',
-                url: '/',
-                body: {
-                    test: {'@type': 'test', value: 'data'}
-                }
-            });
             const error = new RemoteServerError('Cannot deserialize body: Missing normalization for type test');
 
-            const response = createResponse();
-            const next = sinon.spy();
+            const response = await request(server)
+                .post('/')
+                .set('content-type', 'application/json')
+                .send({
+                    test: {'@type': 'test', value: 'data'}
+                })
+                .expect(200);
 
-            await rpc()(request, response, next);
-
-            assertNoErrorThrown(next);
-            assertErrorResponse(response);
-            expect(response._getData())
-                .toEqual(serializer.serialize(error));
+            expect(serializer.normalizer.denormalize(response.body))
+                .toEqual(error);
         });
 
         it('body does not look like command', async () => {
-            const request = createRequest({
-                method: 'POST',
-                url: '/',
-                body: {
-                    test: 1
-                }
-            });
             const error = new RemoteServerError('Request body does not look like a command object. Make sure you have sent proper command object');
 
-            const response = createResponse();
-            const next = sinon.spy();
-            await rpc()(request, response, next);
+            const response = await request(server)
+                .post('/')
+                .set('content-type', 'application/json')
+                .send({
+                    test: 1
+                })
+                .expect(200);
 
-            // then
-            assertNoErrorThrown(next);
-            assertErrorResponse(response);
-            expect(response._getData())
-                .toEqual(serializer.serialize(error));
+            expect(serializer.normalizer.denormalize(response.body))
+                .toEqual(error);
         })
     });
 
-
     describe('success', () => {
-        let server: ReturnType<typeof rpcServer>;
-        beforeEach(() => {
-            server = rpc({
-                serializer
-            });
-        });
-
         it('regular result', async () => {
-            // given
-            const request = createRequest({
-                method: 'POST',
-                url: '/',
-                body: COMMAND
-            });
-
             const result = {example: 'result'};
-            const serializedResult = JSON.stringify(result);
-            const response = createResponse();
-            const next = sinon.spy();
 
             commandBus.handle
                 .withArgs(COMMAND)
                 .resolves(result);
 
-            // when
-            await server(request, response, next);
+            const response = await request(server)
+                .post('/')
+                .send(serializer.serialize(COMMAND))
+                .set('content-type', 'application/json')
+                .expect('content-type', /json/)
+                .expect(200);
 
-            // then
-            assertNoErrorThrown(next);
-            assertSuccessResponse(response);
-            expect(response._getData())
-                .toEqual(serializedResult);
+            expect(serializer.normalizer.denormalize(response.body))
+                .toEqual(result);
+        });
+
+        it('returns stream', async () => {
+            const result = new ReadableStreamBuffer();
+
+            commandBus.handle
+                .withArgs(COMMAND)
+                .resolves(result);
+
+            const responsePromise = request(server)
+                .post('/')
+                .send(serializer.serialize(COMMAND))
+                .set('content-type', 'application/json')
+                .expect('content-type', /octet\-stream/)
+                .expect(200);
+
+            result.put(BUFFER);
+            result.stop();
+
+            const response = await responsePromise;
+            expect(response.body.equals(BUFFER))
+                .toBe(true);
         });
 
         it('error thrown', async () => {
-            // given
-            const request = createRequest({
-                method: 'POST',
-                url: '/',
-                body: COMMAND
-            });
-
             const error = new Error('Example error');
-            const response = createResponse();
-            const next = sinon.spy();
 
             commandBus.handle
                 .withArgs(COMMAND)
                 .rejects(error);
 
-            // when
-            await server(request, response, next);
+            const response = await request(server)
+                .post('/')
+                .send(serializer.serialize(COMMAND))
+                .set('content-type', 'application/json')
+                .expect('content-type', /json/)
+                .expect('X-command-bus-error', '1')
+                .expect(200);
 
-            // then
-            assertNoErrorThrown(next);
-            assertErrorResponse(response);
-            expect(response._getData())
-                .toEqual(serializer.serialize(error));
-        })
+            expect(serializer.normalizer.denormalize(response.body))
+                .toEqual(error);
+        });
+    });
+
+    describe('handles files upload', () => {
+        it('simple example', async () => {
+            const filePath = path.resolve(
+                __dirname,
+                './tsconfig.json'
+            )
+            const fileStream = fs.createReadStream(filePath);
+
+            await request(server)
+                .post('/')
+                .field('commandBody', serializer.serialize({
+                    command: COMMAND.command
+                }))
+                .attach('config', fileStream, {contentType: 'application/octet-stream'})
+                .expect('content-type', /json/)
+                .expect(200);
+
+            const command: any = commandBus.handle.getCall(0).args[0];
+            expect(command)
+                .toMatchObject({
+                    command: COMMAND.command,
+                    config: expect.any(Readable)
+                });
+
+            const expectedContent = fs.readFileSync(filePath);
+            const commandConfigContent = await streamToPromise((command as any).config);
+
+            expect(expectedContent.equals(commandConfigContent))
+                .toBe(true);
+        });
     });
 });
