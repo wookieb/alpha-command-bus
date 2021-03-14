@@ -1,5 +1,6 @@
 import {CommandHandlerDescriptor} from "@src/CommandHandlerDescriptor";
 import * as sinon from 'sinon';
+import {ShapeCommand} from 'alpha-command-bus-command-factory';
 
 describe('CommandHandlerDescriptor', () => {
     const COMMAND_NAME = 'commandName';
@@ -52,6 +53,20 @@ describe('CommandHandlerDescriptor', () => {
                 .toBeTruthy();
 
             sinon.assert.calledWith(filter, command);
+        });
+
+        it('ShapeCommand', () => {
+            class Foo extends ShapeCommand.create(COMMAND_NAME) {
+
+            }
+
+            const predicate = CommandHandlerDescriptor.filterToPredicate(Foo);
+
+            expect(predicate({command: COMMAND_NAME}))
+                .toEqual(true);
+
+            expect(predicate({command: 'random'}))
+                .toEqual(false);
         });
 
         it('throws error if filter has invalid type', () => {

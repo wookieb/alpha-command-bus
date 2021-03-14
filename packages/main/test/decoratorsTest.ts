@@ -1,6 +1,11 @@
 import {CommandHandler, getCommandHandlersFromObject} from "@src/decorators";
-import {Command} from "@src/Command";
 import 'jest-extended';
+import {ShapeCommand} from 'alpha-command-bus-command-factory';
+import {Command} from 'alpha-command-bus-core';
+
+class Foo extends ShapeCommand.create('foooo') {
+
+}
 
 class ExampleCommandsHandlerContainer {
     @CommandHandler('commandName')
@@ -11,6 +16,11 @@ class ExampleCommandsHandlerContainer {
     @CommandHandler('commandName2')
     handler2(command: Command) {
         return 'handler2';
+    }
+
+    @CommandHandler(Foo)
+    handler3(command: Command) {
+        return 'handler3'
     }
 }
 
@@ -27,8 +37,11 @@ describe('decorators', () => {
             expect(handlers[1].func({command: 'commandName2'}))
                 .toBeTruthy();
 
+            expect(handlers[2].func({command: 'foooo'}))
+                .toBeTruthy();
+
             expect(handlers.map(e => e.func({command: 'test'})))
-                .toIncludeSameMembers(['handler1', 'handler2'])
+                .toIncludeSameMembers(['handler1', 'handler2', 'handler3'])
         });
 
         it('throws an error if decorated property is not a function', () => {

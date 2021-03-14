@@ -1,11 +1,11 @@
-import {Command} from "@src/Command";
+import {create} from '@src/create';
 
-describe('Command', () => {
+describe('create', () => {
     const NAME = 'commandName';
 
     describe('creating command', () => {
         it('without extra properties', () => {
-            const command = Command.create(NAME);
+            const command = create(NAME);
 
             expect(command)
                 .toEqual({
@@ -17,7 +17,7 @@ describe('Command', () => {
         });
 
         it('with extra properties', () => {
-            const command = Command.create(NAME, {arg: 1});
+            const command = create(NAME, {arg: 1});
 
             expect(command)
                 .toEqual({
@@ -29,22 +29,4 @@ describe('Command', () => {
                 .toBeTruthy();
         });
     });
-
-    it('Base command', () => {
-        const command = new Command.Base(NAME);
-
-        expect(command)
-            .toEqual({
-                command: NAME
-            });
-
-        expect(Object.isFrozen(command))
-            .toBeFalsy();
-
-        command.freeze();
-
-        expect(Object.isFrozen(command))
-            .toBeTruthy();
-    });
 });
-

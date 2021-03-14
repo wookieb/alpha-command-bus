@@ -1,5 +1,5 @@
-import {Command} from "./Command";
 import {CommandHandlerDescriptor} from "./CommandHandlerDescriptor";
+import {Command, CommandRunner} from 'alpha-command-bus-core';
 
 
 export class CommandBus {
@@ -51,6 +51,9 @@ export class CommandBus {
         return next(command);
     }
 
+    asCommandRunner(): CommandRunner {
+        return this.handle.bind(this);
+    }
 
     hasCommandHandler(command: Command) {
         return !!this.getCommandHandlerForCommand(command);

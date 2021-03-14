@@ -16,6 +16,7 @@
     "@types/supertest": "^2.0.10",
     "@types/type-is": "^1.6.3",
     "busboy": "^0.3.1",
+    "conditional-type-checks": "^1.0.5",
     "express": "^4.17.1",
     "jest-extended": "^0.11.5",
     "lerna": "^4.0.0",

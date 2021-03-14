@@ -28,6 +28,7 @@
     "alpha-serializer": "0.5.*"
   },
   "dependencies": {
+    "alpha-command-bus-core": "^0.9",
     "@types/superagent": "^4.1.10",
     "predicates": "^2.0.3",
     "stream-to-promise": "^3.0.0",

@@ -4,12 +4,10 @@ import superagent = require('superagent');
 import {Readable} from 'stream';
 import {isReadableStream} from './isReadableStream';
 import streamToPromise = require('stream-to-promise');
+import {Command} from 'alpha-command-bus-core';
+import {CommandRunner} from '../../core';
 
-export interface Command {
-    command: string;
-}
-
-export class Client<T extends {} = any> {
+export class Client<T = undefined> {
     private serializer: Serializer;
     private middlewares: Array<Middleware<T>> = [];
 
@@ -44,6 +42,10 @@ export class Client<T extends {} = any> {
         return this;
     }
 
+    asCommandRunner<TResult = any>(): CommandRunner<TResult, T> {
+        return (...args) => this.handle(...args);
+    }
+
     async handle<TResult>(command: Command, contextData: T): Promise<TResult> {
         let currentMiddleware = 0;
 
@@ -62,7 +64,6 @@ export class Client<T extends {} = any> {
             for (const [key, stream] of Object.entries(commandData.files)) {
                 request.attach(key, stream as any);
             }
-
             request.field('commandBody', this.serializer.serialize(commandData.command));
         } else {
             request.send(this.serializer.serialize(command));
@@ -104,7 +105,7 @@ export class Client<T extends {} = any> {
 }
 
 export namespace Client {
-    export interface Context<T extends {}> {
+    export interface Context<T> {
         request: superagent.Request;
         command: Command;
         context: T;

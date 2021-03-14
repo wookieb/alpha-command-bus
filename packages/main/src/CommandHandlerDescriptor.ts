@@ -1,4 +1,5 @@
-import {Command} from "./Command";
+import {Command} from 'alpha-command-bus-core';
+import {ShapeCommand} from 'alpha-command-bus-command-factory/src/ShapeCommand';
 
 const matchesObject = require('lodash.matches');
 
@@ -18,20 +19,24 @@ export class CommandHandlerDescriptor<TCommand extends Command = Command> {
     }
 
     static filterToPredicate(filter: CommandHandlerDescriptor.Filter<any>): CommandHandlerDescriptor.Predicate<any> {
-        switch (true) {
-            case typeof filter === 'string':
-                const commandName = filter;
-                return (c: Command) => c.command === commandName;
-
-            case typeof filter === 'object':
-                return matchesObject(filter) as CommandHandlerDescriptor.Predicate<any>;
-
-            case filter instanceof Function:
-                return filter as CommandHandlerDescriptor.Predicate<any>;
-
-            default:
-                throw new Error('Command predicate has to be a function, a string or an object');
+        if (typeof filter === 'string') {
+            const commandName = filter;
+            return (c: Command) => c.command === commandName;
         }
+
+        if (ShapeCommand.isType(filter)) {
+            return (c: Command) => c.command === filter.COMMAND_NAME;
+        }
+
+        if (filter instanceof Function) {
+            return filter as CommandHandlerDescriptor.Predicate<any>;
+        }
+
+        if (typeof filter === 'object') {
+            return matchesObject(filter) as CommandHandlerDescriptor.Predicate<any>;
+        }
+
+        throw new Error('Command predicate has to be a function, a string, an object or class or ShapeCommand.Shape')
     }
 }
 
@@ -40,5 +45,5 @@ export namespace CommandHandlerDescriptor {
 
     export type Func<TCommand extends Command, TResult = any> = (command: TCommand) => Promise<TResult> | TResult;
 
-    export type Filter<TCommand extends Command> = string | object | Predicate<TCommand>;
+    export type Filter<TCommand extends Command> = string | object | Predicate<TCommand> | ShapeCommand.Shape;
 }

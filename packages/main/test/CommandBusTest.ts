@@ -1,7 +1,8 @@
 import {CommandBus} from "@src/CommandBus";
-import {Command} from "@src/Command";
 import * as sinon from 'sinon';
 import {CommandHandlerDescriptor} from "@src/CommandHandlerDescriptor";
+import {create} from 'alpha-command-bus-command-factory';
+import {Command} from 'alpha-command-bus-core';
 
 describe('CommandBus', () => {
     let commandBus: CommandBus;
@@ -33,41 +34,41 @@ describe('CommandBus', () => {
         const COMMAND_NAME2 = 'randomCommandName2';
 
         it('single', () => {
-            expect(commandBus.hasCommandHandler(Command.create(COMMAND_NAME)))
+            expect(commandBus.hasCommandHandler(create(COMMAND_NAME)))
                 .toBeFalsy();
             commandBus.registerCommandHandler(
                 CommandHandlerDescriptor.fromFilter(COMMAND_NAME, sinon.stub())
             );
-            expect(commandBus.hasCommandHandler(Command.create(COMMAND_NAME)))
+            expect(commandBus.hasCommandHandler(create(COMMAND_NAME)))
                 .toBeTruthy();
         });
 
         it('multi', () => {
-            expect(commandBus.hasCommandHandler(Command.create(COMMAND_NAME)))
+            expect(commandBus.hasCommandHandler(create(COMMAND_NAME)))
                 .toBeFalsy();
-            expect(commandBus.hasCommandHandler(Command.create(COMMAND_NAME2)))
+            expect(commandBus.hasCommandHandler(create(COMMAND_NAME2)))
                 .toBeFalsy();
 
             commandBus.registerCommandHandlers([
                 CommandHandlerDescriptor.fromFilter(COMMAND_NAME, sinon.stub()),
                 CommandHandlerDescriptor.fromFilter(COMMAND_NAME2, sinon.stub()),
             ]);
-            expect(commandBus.hasCommandHandler(Command.create(COMMAND_NAME)))
+            expect(commandBus.hasCommandHandler(create(COMMAND_NAME)))
                 .toBeTruthy();
-            expect(commandBus.hasCommandHandler(Command.create(COMMAND_NAME2)))
+            expect(commandBus.hasCommandHandler(create(COMMAND_NAME2)))
                 .toBeTruthy();
         });
     });
 
     describe('handling command', () => {
         it('simple command', async () => {
-            const result = await commandBus.handle(Command.create(COMMAND_NAME));
+            const result = await commandBus.handle(create(COMMAND_NAME));
             expect(result)
                 .toStrictEqual(RESULT);
         });
 
         it('fails if no command handler registered', () => {
-            return expect(commandBus.handle(Command.create('test')))
+            return expect(commandBus.handle(create('test')))
                 .rejects
                 .toThrowError(/No command handler registered for command: test/)
         });
@@ -82,7 +83,7 @@ describe('CommandBus', () => {
 
             commandBus.use(middleware);
 
-            const result = await commandBus.handle(Command.create(COMMAND_NAME));
+            const result = await commandBus.handle(create(COMMAND_NAME));
             expect(result).toStrictEqual(RESULT);
 
             assertMiddlewareCalled(middleware);
@@ -100,7 +101,7 @@ describe('CommandBus', () => {
             const commandHandler = sinon.spy();
             commandBus.registerCommandHandler(CommandHandlerDescriptor.fromFilter(COMMAND_NAME, commandHandler));
 
-            const result = await commandBus.handle(Command.create(COMMAND_NAME));
+            const result = await commandBus.handle(create(COMMAND_NAME));
 
             expect(result).toStrictEqual(MIDDLEWARE_RESULT);
             assertMiddlewareCalled(middleware);

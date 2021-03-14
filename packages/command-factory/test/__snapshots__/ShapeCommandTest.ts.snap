@@ -1,0 +1,8 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ShapeCommand properties 1`] = `
+Foo {
+  "command": "foooo",
+  "id": "10",
+}
+`;

@@ -1,11 +1,19 @@
 {
-    "extends": "@pallad/scripts/tsconfig-node.dist.json",
-    "compilerOptions": {
-        "rootDir": ".",
-        "outDir": "../compiled",
-        "composite": true
+  "extends": "@pallad/scripts/tsconfig-node.dist.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "../compiled",
+    "composite": true
+  },
+  "include": [
+    "**/*"
+  ],
+  "references": [
+    {
+      "path": "../../core/src"
     },
-    "include": [
-        "**/*"
-    ]
+    {
+      "path": "../../command-factory/src"
+    }
+  ]
 }
