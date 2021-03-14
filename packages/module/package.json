@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus-module",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Module for alpha-command-bus",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
@@ -22,7 +22,7 @@
   ],
   "devDependencies": {
     "@pallad/modules": "^1.2.0",
-    "alpha-command-bus": "^2.0.0",
+    "alpha-command-bus": "^2.0.1",
     "alpha-dic": "3.*"
   },
   "author": "Łukasz Kużyński <lukasz.kuzynski@gmail.com> (http://wookieb.pl)",

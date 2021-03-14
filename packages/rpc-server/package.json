@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus-rpc-server",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "RPC server over http for alpha-command-bus",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
@@ -26,7 +26,7 @@
     "alpha-serializer": "0.5.*"
   },
   "devDependencies": {
-    "alpha-command-bus": "^2.0.0"
+    "alpha-command-bus": "^2.0.1"
   },
   "dependencies": {
     "@pallad/common-errors": "^1.1.1",
