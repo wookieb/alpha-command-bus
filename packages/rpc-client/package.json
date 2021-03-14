@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus-rpc-client",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Client for alpha-command-bus-rpc-server",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
@@ -28,8 +28,8 @@
     "alpha-serializer": "0.5.*"
   },
   "dependencies": {
-    "alpha-command-bus-core": "^0.9",
     "@types/superagent": "^4.1.10",
+    "alpha-command-bus-core": "^1.0.0",
     "predicates": "^2.0.3",
     "stream-to-promise": "^3.0.0",
     "superagent": "^6.1.0"

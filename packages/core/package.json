@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus-core",
-  "version": "0.9.9",
+  "version": "1.0.0",
   "description": "",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
