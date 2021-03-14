@@ -4,8 +4,7 @@ import superagent = require('superagent');
 import {Readable} from 'stream';
 import {isReadableStream} from './isReadableStream';
 import streamToPromise = require('stream-to-promise');
-import {Command} from 'alpha-command-bus-core';
-import {CommandRunner} from '../../core';
+import {Command, CommandRunner} from 'alpha-command-bus-core';
 
 export class Client<T = undefined> {
     private serializer: Serializer;
