@@ -26,7 +26,9 @@ export class Client<T = undefined> {
                 }
 
                 const contentBuffer: Buffer = await streamToPromise(stream)
-                const deserialized = contentBuffer.length === 0 ? undefined :
+
+                const hasContent = Buffer.isBuffer(contentBuffer) && contentBuffer.length !== 0;
+                const deserialized = !hasContent ? undefined :
                     this.serializer.deserialize(contentBuffer.toString('utf8'));
                 if (response.get('X-command-bus-error') === '1') {
                     throw deserialized;
@@ -54,6 +56,10 @@ export class Client<T = undefined> {
         const request = superagent
             .post(this.url)
             .buffer(false)
+            .parse((res, cb) => {
+                // tslint:disable-next-line:no-null-keyword
+                cb(null, undefined);
+            })
             .set('content-type', 'application/json')
             .set('accept', 'application/json');
 

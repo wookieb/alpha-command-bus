@@ -60,17 +60,17 @@ describe('Client', () => {
     it('simple command request', async () => {
         serverStub
             .post('/')
-            .reply(200, serializer.serialize(RESULT));
+            .reply(200, serializer.serialize(RESULT), {
+                'content-type': 'application/json'
+            });
 
-        const result = await client.handle(COMMAND, {});
+        const result = await client.handle(COMMAND, undefined);
 
         expect(result)
             .toEqual(RESULT);
     });
 
     it('returning stream', async () => {
-
-
         serverStub
             .post('/')
             .reply(200, () => {
@@ -90,7 +90,7 @@ describe('Client', () => {
                 'content-type': 'application/octet-stream'
             });
 
-        const result = await client.handle<Readable>(COMMAND, {});
+        const result = await client.handle<Readable>(COMMAND, undefined);
 
         const content = await streamToPromise(result);
         expect(Buffer.concat(BUFFERS).equals(content))
@@ -101,10 +101,11 @@ describe('Client', () => {
         serverStub
             .post('/')
             .reply(200, serializer.serialize(ERROR), {
-                'X-command-bus-error': '1'
+                'X-command-bus-error': '1',
+                'content-type': 'application/json'
             });
 
-        return expect(client.handle(COMMAND, {}))
+        return expect(client.handle(COMMAND, undefined))
             .rejects
             .toEqual(ERROR);
     });
@@ -116,7 +117,9 @@ describe('Client', () => {
         serverStub
             .post('/')
             .matchHeader(FAKE_HEADER_NAME, FAKE_HEADER_VALUE)
-            .reply(200, serializer.serialize(RESULT));
+            .reply(200, serializer.serialize(RESULT), {
+                'content-type': 'application/json'
+            });
 
         client.use(
             (context, next) => {
@@ -125,7 +128,7 @@ describe('Client', () => {
             }
         );
 
-        const result = await client.handle(COMMAND, {});
+        const result = await client.handle(COMMAND, undefined);
         expect(result)
             .toEqual(RESULT);
     });
@@ -167,10 +170,9 @@ describe('Client', () => {
                 return serializer.serialize(RESULT);
             });
 
-        const result = await client.handle(command, {});
+        const result = await client.handle(command, undefined);
         expect(result)
             .toEqual(RESULT);
-
 
         expect(serializer.deserialize(receivedData.fields.commandBody))
             .toEqual(commandData);
