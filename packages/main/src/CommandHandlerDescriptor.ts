@@ -1,5 +1,5 @@
 import {Command} from 'alpha-command-bus-core';
-import {ShapeCommand} from 'alpha-command-bus-command-factory/src/ShapeCommand';
+import {ShapeCommand} from 'alpha-command-bus-command-factory';
 
 const matchesObject = require('lodash.matches');
 
