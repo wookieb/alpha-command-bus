@@ -25,7 +25,11 @@ export class Client<T = undefined> {
                     return stream;
                 }
 
-                const contentBuffer: Buffer = await streamToPromise(stream)
+                const buffers = [];
+                for await (const chunk of stream) {
+                    buffers.push(chunk);
+                }
+                const contentBuffer = Buffer.concat(buffers);
 
                 const hasContent = Buffer.isBuffer(contentBuffer) && contentBuffer.length !== 0;
                 const deserialized = !hasContent ? undefined :
