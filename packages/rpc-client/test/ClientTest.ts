@@ -1,7 +1,6 @@
 import nock = require('nock');
-import {Serializer} from "alpha-serializer";
+import {JSONAdapter, Serializer, StandardNormalizer} from "alpha-serializer";
 import {Client} from "@src/Client";
-import * as sinon from 'sinon';
 import {ReadableStreamBuffer} from 'stream-buffers';
 import {Readable} from 'stream';
 import streamToPromise = require('stream-to-promise');
@@ -11,9 +10,24 @@ import * as Busboy from 'busboy';
 describe('Client', () => {
     let serverStub: nock.Scope;
     let client: Client;
-    let serializer: sinon.SinonStubbedInstance<Serializer>;
 
-    const COMMAND = {command: 'example', arg1: 'test'};
+    const normalizer = new StandardNormalizer();
+    normalizer.registerNormalization({
+        clazz: Error,
+        normalizer(err: Error) {
+            return err.message;
+        },
+        denormalizer(message: string) {
+            return new Error(message);
+        }
+    });
+
+    const serializer = new Serializer(
+        new JSONAdapter(),
+        normalizer
+    )
+
+    const COMMAND = {command: 'example', arg1: 'test', date: new Date()};
     const RESULT = {some: 'result'};
     const ERROR = new Error('test');
     const BUFFERS = [
@@ -26,31 +40,6 @@ describe('Client', () => {
     beforeEach(() => {
         client = new Client('http://command-bus-server-http', serializer as any as Serializer);
         serverStub = nock('http://command-bus-server-http');
-        serializer = sinon.createStubInstance(Serializer);
-
-        serializer.serialize
-            .withArgs(COMMAND)
-            .returns(JSON.stringify(COMMAND));
-
-        serializer.deserialize
-            .withArgs(JSON.stringify(COMMAND))
-            .returns(COMMAND);
-
-        serializer.serialize
-            .withArgs(RESULT)
-            .returns(JSON.stringify(RESULT));
-
-        serializer.deserialize
-            .withArgs(JSON.stringify(RESULT))
-            .returns(RESULT);
-
-        serializer.serialize
-            .withArgs(ERROR)
-            .returns('error');
-
-        serializer.deserialize
-            .withArgs('error')
-            .returns(ERROR);
     });
 
     afterEach(() => {
@@ -60,6 +49,7 @@ describe('Client', () => {
     it('simple command request', async () => {
         serverStub
             .post('/')
+            .delay(40)
             .reply(200, serializer.serialize(RESULT), {
                 'content-type': 'application/json'
             });
@@ -73,6 +63,7 @@ describe('Client', () => {
     it('returning stream', async () => {
         serverStub
             .post('/')
+            .delay(40)
             .reply(200, () => {
                 const stream = new ReadableStreamBuffer();
                 const buffers = BUFFERS.slice();
@@ -100,6 +91,7 @@ describe('Client', () => {
     it('throws command bus error if when gets returned', () => {
         serverStub
             .post('/')
+            .delay(40)
             .reply(200, serializer.serialize(ERROR), {
                 'X-command-bus-error': '1',
                 'content-type': 'application/json'
@@ -116,6 +108,7 @@ describe('Client', () => {
 
         serverStub
             .post('/')
+            .delay(40)
             .matchHeader(FAKE_HEADER_NAME, FAKE_HEADER_VALUE)
             .reply(200, serializer.serialize(RESULT), {
                 'content-type': 'application/json'
@@ -168,7 +161,10 @@ describe('Client', () => {
                 stream.pipe(busboy);
                 stream.stop();
                 return serializer.serialize(RESULT);
+            }, {
+                'content-type': 'application/json'
             });
+
 
         const result = await client.handle(command, undefined);
         expect(result)

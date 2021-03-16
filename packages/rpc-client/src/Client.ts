@@ -3,7 +3,6 @@ import {Middleware} from "./Middleware";
 import superagent = require('superagent');
 import {Readable} from 'stream';
 import {isReadableStream} from './isReadableStream';
-import streamToPromise = require('stream-to-promise');
 import {Command, CommandRunner} from 'alpha-command-bus-core';
 
 export class Client<T = undefined> {
@@ -24,20 +23,10 @@ export class Client<T = undefined> {
                 if (response.get('content-type') === 'application/octet-stream') {
                     return stream;
                 }
-
-                const buffers = [];
-                for await (const chunk of stream) {
-                    buffers.push(chunk);
-                }
-                const contentBuffer = Buffer.concat(buffers);
-
-                const hasContent = Buffer.isBuffer(contentBuffer) && contentBuffer.length !== 0;
-                const deserialized = !hasContent ? undefined :
-                    this.serializer.deserialize(contentBuffer.toString('utf8'));
                 if (response.get('X-command-bus-error') === '1') {
-                    throw deserialized;
+                    throw response.body;
                 }
-                return deserialized;
+                return response.body
             }
         )
     }
@@ -60,9 +49,25 @@ export class Client<T = undefined> {
         const request = superagent
             .post(this.url)
             .buffer(false)
-            .parse((res, cb) => {
-                // tslint:disable-next-line:no-null-keyword
-                cb(null, undefined);
+            // tslint:disable-next-line:no-async-without-await
+            .parse(async (res, cb) => {
+                if ((res.headers['content-type'] || '').includes('application/json')) {
+                    let data = '';
+                    for await (const chunk of res) {
+                        data += Buffer.isBuffer(chunk) ? chunk.toString('utf8') : chunk;
+                    }
+                    if (data.length === 0) {
+                        // tslint:disable-next-line:no-null-keyword
+                        cb(null, undefined);
+                    } else {
+                        const deserialized = this.serializer.deserialize(data);
+                        // tslint:disable-next-line:no-null-keyword
+                        cb(null, deserialized);
+                    }
+                } else {
+                    // tslint:disable-next-line:no-null-keyword
+                    cb(null, undefined);
+                }
             })
             .set('content-type', 'application/json')
             .set('accept', 'application/json');
