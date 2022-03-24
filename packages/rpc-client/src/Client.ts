@@ -1,32 +1,50 @@
 import {Serializer, serializer as _serializer} from "alpha-serializer";
 import {Middleware} from "./Middleware";
-import superagent = require('superagent');
 import {Readable} from 'stream';
 import {isReadableStream} from './isReadableStream';
 import {Command, CommandRunner} from 'alpha-command-bus-core';
+import {Dispatcher, Pool} from 'undici';
+import {FormData, File} from 'formdata-node';
+import {FormDataEncoder} from 'form-data-encoder';
+
 
 export class Client<T = undefined> {
     private serializer: Serializer;
     private middlewares: Array<Middleware<T>> = [];
 
-    constructor(private url: string, serializer?: Serializer) {
+    private url: URL;
+
+    private pool: Pool;
+
+    constructor(url: string | URL, serializer?: Serializer) {
         this.serializer = serializer || _serializer;
+        this.url = url instanceof URL ? url : new URL(url);
+
+        const originUrl = new URL(this.url.toString());
+        originUrl.pathname = '/';
+        originUrl.search = '';
+        originUrl.hash = '';
+
+        this.pool = new Pool(originUrl);
+
         this.middlewares.push(
             async (context, next) => {
 
-                const response: superagent.Response = await context.request;
-                if (response.status !== 200) {
-                    throw new Error(`Invalid response status: ${response.status}`);
+                const response = await this.pool.request(context.request);
+                if (response.statusCode !== 200) {
+                    throw new Error(`Invalid response status: ${response.statusCode}`);
                 }
 
-                const stream = (response as any).res;
-                if (response.get('content-type') === 'application/octet-stream') {
-                    return stream;
+                if (response.headers["content-type"] === 'application/octet-stream') {
+                    return response.body;
                 }
-                if (response.get('X-command-bus-error') === '1') {
-                    throw response.body;
+
+                const body = await response.body.text();
+                const parsed = body.length === 0 ? undefined : this.serializer.deserialize(body);
+                if (response.headers['x-command-bus-error'] === '1') {
+                    throw parsed;
                 }
-                return response.body
+                return parsed;
             }
         )
     }
@@ -37,7 +55,7 @@ export class Client<T = undefined> {
     }
 
     asCommandRunner<TResult = any>(): CommandRunner<TResult, T> {
-        return (...args) => this.handle(...args);
+        return this.handle.bind(this);
     }
 
     async handle<TResult>(command: Command, contextData: T): Promise<TResult> {
@@ -46,41 +64,41 @@ export class Client<T = undefined> {
         // make a copy to prevent changing the chain during execution
         const middlewares = this.middlewares.slice();
 
-        const request = superagent
-            .post(this.url)
-            .buffer(false)
-            // tslint:disable-next-line:no-async-without-await
-            .parse(async (res, cb) => {
-                if ((res.headers['content-type'] || '').includes('application/json')) {
-                    let data = '';
-                    for await (const chunk of res) {
-                        data += Buffer.isBuffer(chunk) ? chunk.toString('utf8') : chunk;
-                    }
-                    if (data.length === 0) {
-                        // tslint:disable-next-line:no-null-keyword
-                        cb(null, undefined);
-                    } else {
-                        const deserialized = this.serializer.deserialize(data);
-                        // tslint:disable-next-line:no-null-keyword
-                        cb(null, deserialized);
-                    }
-                } else {
-                    // tslint:disable-next-line:no-null-keyword
-                    cb(null, undefined);
-                }
-            })
-            .set('content-type', 'application/json')
-            .set('accept', 'application/json');
+        const request: Dispatcher.RequestOptions = {
+            path: this.url.pathname,
+            method: 'POST',
+            headers: {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                'content-type': 'application/json',
+                accept: 'application/json'
+            }
+        };
 
         const commandData = this.getCommandData(command);
 
         if ('files' in commandData) {
+            const formData = new FormData();
+            formData.append('commandBody', this.serializer.serialize(commandData.command));
+
             for (const [key, stream] of Object.entries(commandData.files)) {
-                request.attach(key, stream as any);
+                formData.set(key, {
+                    type: "application/octet-stream",
+                    name: 'octetStream',
+                    [Symbol.toStringTag]: "File",
+                    stream() {
+                        return stream;
+                    }
+                });
             }
-            request.field('commandBody', this.serializer.serialize(commandData.command));
+            const encoder = new FormDataEncoder(formData)
+            request.headers = {
+                ...request.headers,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                'content-type': encoder.contentType,
+            };
+            request.body = Readable.from(encoder)
         } else {
-            request.send(this.serializer.serialize(command));
+            request.body = this.serializer.serialize(command);
         }
 
         const context: Client.Context<T> = {
@@ -116,11 +134,15 @@ export class Client<T = undefined> {
         }
         return command;
     }
+
+    close() {
+        return this.pool.destroy();
+    }
 }
 
 export namespace Client {
     export interface Context<T> {
-        request: superagent.Request;
+        request: Dispatcher.RequestOptions;
         command: Command;
         context: T;
     }

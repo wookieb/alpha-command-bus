@@ -4,6 +4,7 @@ export namespace ShapeCommand {
     export function create(name: string) {
         return class extends BaseCommand {
             static COMMAND_NAME = name;
+            static commandName = name;
 
             constructor() {
                 super(name);
@@ -12,7 +13,9 @@ export namespace ShapeCommand {
     }
 
     export interface Shape<TName extends string = string> {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         readonly COMMAND_NAME: TName,
+        readonly commandName: TName;
 
         new(...args: any[]): any
     }

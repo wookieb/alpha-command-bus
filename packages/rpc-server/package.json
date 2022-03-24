@@ -32,7 +32,7 @@
     "@pallad/common-errors": "^1.1.1",
     "alpha-serializer": "0.5.*",
     "body-parser": "^1.19.0",
-    "busboy": "^0.3.1",
+    "busboy": "^1",
     "express-async-handler": "^1.1.4",
     "predicates": "^2.0.3",
     "type-is": "^1.6.18"

@@ -1,6 +1,0 @@
-{
-  "extends": "@pallad/scripts/tslint.dist.json",
-  "rules": {
-    "no-implicit-dependencies": false
-  }
-}

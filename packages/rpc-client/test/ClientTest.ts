@@ -1,15 +1,27 @@
-import nock = require('nock');
 import {JSONAdapter, Serializer, StandardNormalizer} from "alpha-serializer";
 import {Client} from "@src/Client";
 import {ReadableStreamBuffer} from 'stream-buffers';
 import {Readable} from 'stream';
 import streamToPromise = require('stream-to-promise');
-import {ReplyFnContext} from 'nock';
-import * as Busboy from 'busboy';
+import {createServer, IncomingMessage, Server, ServerResponse} from 'http';
+import {once} from 'events'
+import {AddressInfo} from "net";
+import * as sinon from 'sinon';
+import {setGlobalDispatcher, Agent} from 'undici'
+import {promisify} from 'util';
+import * as busboy from "busboy";
+
+const agent = new Agent({
+    keepAliveTimeout: 10, // milliseconds
+    keepAliveMaxTimeout: 10 // milliseconds
+})
+
+setGlobalDispatcher(agent)
 
 describe('Client', () => {
-    let serverStub: nock.Scope;
+    let server: Server;
     let client: Client;
+    let requestHandler: sinon.SinonStub;
 
     const normalizer = new StandardNormalizer();
     normalizer.registerNormalization({
@@ -25,7 +37,7 @@ describe('Client', () => {
     const serializer = new Serializer(
         new JSONAdapter(),
         normalizer
-    )
+    );
 
     const COMMAND = {command: 'example', arg1: 'test', date: new Date()};
     const RESULT = {some: 'result'};
@@ -37,49 +49,76 @@ describe('Client', () => {
         Buffer.from('Soluta quis enim dicta modi sunt rem.', 'utf8'),
     ];
 
-    beforeEach(() => {
-        client = new Client('http://command-bus-server-http', serializer as any as Serializer);
-        serverStub = nock('http://command-bus-server-http');
+    beforeEach(async () => {
+        requestHandler = sinon.stub();
+        server = createServer(requestHandler).listen();
+        await once(server, 'listening')
+
+        client = new Client(`http://localhost:${(server.address() as AddressInfo).port}/some-path`, serializer as unknown as Serializer);
     });
 
-    afterEach(() => {
-        serverStub.done();
+    afterEach(async () => {
+        await client.close()
+        await promisify(server.close.bind(server))();
     });
+
+    function handleRequest(handler: (req: IncomingMessage, res: ServerResponse) => void) {
+        requestHandler.callsFake(handler);
+    }
 
     it('simple command request', async () => {
-        serverStub
-            .post('/')
-            .delay(40)
-            .reply(200, serializer.serialize(RESULT), {
-                'content-type': 'application/json'
-            });
-
+        handleRequest((req, res) => {
+            res.statusCode = 200;
+            res.setHeader('content-type', 'application/json');
+            res.end(serializer.serialize(RESULT));
+        });
         const result = await client.handle(COMMAND, undefined);
 
         expect(result)
             .toEqual(RESULT);
     });
 
+    it('handles undefined properly', async () => {
+        handleRequest((req, res) => {
+            res.statusCode = 200;
+            res.setHeader('content-type', 'application/json');
+            res.end();
+        });
+        const result = await client.handle(COMMAND, undefined);
+
+        expect(result)
+            .toBeUndefined();
+    });
+
+    it('handles null properly', async () => {
+        handleRequest((req, res) => {
+            res.statusCode = 200;
+            res.setHeader('content-type', 'application/json');
+            res.end('null');
+        });
+        const result = await client.handle(COMMAND, undefined);
+
+        expect(result)
+            .toBeNull();
+    })
+
     it('returning stream', async () => {
-        serverStub
-            .post('/')
-            .delay(40)
-            .reply(200, () => {
-                const stream = new ReadableStreamBuffer();
-                const buffers = BUFFERS.slice();
-                const interval = setInterval(() => {
-                    const buffer = buffers.shift();
-                    if (buffer) {
-                        stream.put(buffer);
-                    } else {
-                        stream.stop();
-                        clearInterval(interval);
-                    }
-                }, 20);
-                return stream;
-            }, {
-                'content-type': 'application/octet-stream'
-            });
+        handleRequest((req, res) => {
+            const stream = new ReadableStreamBuffer();
+            const buffers = BUFFERS.slice();
+            const interval = setInterval(() => {
+                const buffer = buffers.shift();
+                if (buffer) {
+                    stream.put(buffer);
+                } else {
+                    stream.stop();
+                    clearInterval(interval);
+                }
+            }, 20);
+
+            res.setHeader('content-type', 'application/octet-stream');
+            stream.pipe(res);
+        });
 
         const result = await client.handle<Readable>(COMMAND, undefined);
 
@@ -89,13 +128,12 @@ describe('Client', () => {
     })
 
     it('throws command bus error if when gets returned', () => {
-        serverStub
-            .post('/')
-            .delay(40)
-            .reply(200, serializer.serialize(ERROR), {
-                'X-command-bus-error': '1',
-                'content-type': 'application/json'
-            });
+        handleRequest((req, res) => {
+            res.setHeader('content-type', 'application/json');
+            res.setHeader('x-command-bus-error', '1');
+            res.statusCode = 200;
+            res.end(serializer.serialize(ERROR));
+        });
 
         return expect(client.handle(COMMAND, undefined))
             .rejects
@@ -106,17 +144,17 @@ describe('Client', () => {
         const FAKE_HEADER_NAME = 'x-fake';
         const FAKE_HEADER_VALUE = 'faker';
 
-        serverStub
-            .post('/')
-            .delay(40)
-            .matchHeader(FAKE_HEADER_NAME, FAKE_HEADER_VALUE)
-            .reply(200, serializer.serialize(RESULT), {
-                'content-type': 'application/json'
-            });
+        handleRequest((req, res) => {
+            res.statusCode = 200;
+            res.setHeader('content-type', 'application/json');
+            res.end(serializer.serialize(RESULT));
+            expect(req.headers[FAKE_HEADER_NAME])
+                .toBe(FAKE_HEADER_VALUE);
+        });
 
         client.use(
             (context, next) => {
-                context.request.set(FAKE_HEADER_NAME, FAKE_HEADER_VALUE);
+                (context.request.headers as any)[FAKE_HEADER_NAME] = FAKE_HEADER_VALUE;
                 return next(context);
             }
         );
@@ -126,10 +164,30 @@ describe('Client', () => {
             .toEqual(RESULT);
     });
 
+
     it('sending files from command', async () => {
+        const receivedData = {
+            fields: {} as any,
+            files: {} as any
+        }
+
+        handleRequest((req, res) => {
+            const busboyHandler = busboy({headers: req.headers});
+            busboyHandler.on('file', (name, file) => {
+                receivedData.files[name] = streamToPromise(file);
+            });
+            busboyHandler.on('field', (name, val) => {
+                receivedData.fields[name] = val;
+            })
+            busboyHandler.on('close', () => {
+                res.statusCode = 200;
+                res.end(serializer.serialize(RESULT));
+            });
+            req.pipe(busboyHandler);
+        });
+
         const commandData = COMMAND;
         const stream = new ReadableStreamBuffer();
-
         for (const buffer of BUFFERS) {
             stream.put(buffer);
         }
@@ -139,33 +197,6 @@ describe('Client', () => {
             file: stream
         };
 
-        const receivedData = {
-            fields: {} as any,
-            files: {} as any
-        }
-        serverStub
-            .post('/')
-            .reply(200, async function (this: ReplyFnContext, uri, body) {
-                const busboy = new Busboy({headers: this.req.headers});
-
-                busboy.on('file', (name, file) => {
-                    receivedData.files[name] = file;
-                });
-
-                busboy.on('field', (name, val) => {
-                    receivedData.fields[name] = val;
-                })
-
-                const stream = new ReadableStreamBuffer();
-                stream.put(body as string);
-                stream.pipe(busboy);
-                stream.stop();
-                return serializer.serialize(RESULT);
-            }, {
-                'content-type': 'application/json'
-            });
-
-
         const result = await client.handle(command, undefined);
         expect(result)
             .toEqual(RESULT);
@@ -173,7 +204,7 @@ describe('Client', () => {
         expect(serializer.deserialize(receivedData.fields.commandBody))
             .toEqual(commandData);
 
-        const fileBuffer = await streamToPromise(receivedData.files.file);
+        const fileBuffer = await receivedData.files.file;
 
         expect(Buffer.concat(BUFFERS).equals(fileBuffer))
             .toBe(true);

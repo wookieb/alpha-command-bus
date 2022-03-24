@@ -7,7 +7,7 @@ import {RemoteServerError} from "@pallad/common-errors";
 import {raw} from 'body-parser';
 import typeIs = require('type-is');
 import {Transform, Readable, TransformCallback} from 'stream';
-import * as Busboy from 'busboy';
+import * as busboy from "busboy";
 import {isReadableStream} from './isReadableStream';
 
 function createNonCommandBodyError() {
@@ -37,7 +37,7 @@ export function rpcServer(commandBus: CommandBus, options: Options = {}) {
                         .send(serializer.serialize(result));
                 }
                 options?.onResult && options.onResult(result);
-            } catch (e) {
+            } catch (e: any) {
                 res.status(200)
                     .header('X-command-bus-error', '1')
                     .header('Content-type', 'application/json')
@@ -50,12 +50,12 @@ export function rpcServer(commandBus: CommandBus, options: Options = {}) {
     function getCommandBodyFromMultipart(serializer: Serializer, req: express.Request): Promise<any> {
         return new Promise((resolve, reject) => {
             let result: any = {};
-            const parser = new Busboy({
+            const parser = busboy({
                 headers: req.headers,
                 fileHwm: 1024 * 1024 * 100
             });
 
-            parser.on('file', (fieldname, file, filename, encoding, mimetype) => {
+            parser.on('file', (fieldname, file) => {
                 const finalFile = file as Readable;
 
                 result[fieldname] = finalFile.pipe(new Transform({
@@ -106,7 +106,7 @@ export function rpcServer(commandBus: CommandBus, options: Options = {}) {
                 } else {
                     command = serializer.normalizer.denormalize(body);
                 }
-            } catch (e) {
+            } catch (e: any) {
                 throw new RemoteServerError(`Cannot deserialize body: ${e.message}`);
             }
         } else if (typeIs.is(mediaType, ['multipart'])) {

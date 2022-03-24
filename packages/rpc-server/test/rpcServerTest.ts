@@ -18,12 +18,6 @@ describe('rpcServer', () => {
     const COMMAND = {command: 'example'};
 
     const BUFFER = Buffer.from('Croire note public membre avoir petit mais.', 'utf8');
-    const OBJECTS = [
-        {sen: 'Move prepare thus ahead best herself.'},
-        {sen: 'Comme inquiétude lequel dehors or.'},
-        {sen: 'Quand toit pleurer cour oui second.'},
-        {sen: 'Aspernatur tempora aliquid porro laboriosam illo.'}
-    ];
 
     beforeEach(() => {
         commandBus = sinon.createStubInstance(CommandBus);

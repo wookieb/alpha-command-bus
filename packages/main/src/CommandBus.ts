@@ -39,7 +39,7 @@ export class CommandBus {
      */
     async handle(command: Command): Promise<any> {
         let currentMiddleware = 0;
-        const next = async (command: Command): Promise<any> => {
+        const next = (command: Command): Promise<any> => {
             const middleware = this.middlewares[currentMiddleware++];
 
             if (middleware) {

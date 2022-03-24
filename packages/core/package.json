@@ -10,6 +10,9 @@
     "lint": "../../node_modules/.bin/pallad-scripts lint",
     "prepack": "npm run compile"
   },
+  "files": [
+    "compiled"
+  ],
   "author": "Łukasz Kużyński <lukasz.kuzynski@gmail.com> (http://wookieb.pl/)",
   "license": "MIT"
 }

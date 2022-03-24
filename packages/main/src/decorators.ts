@@ -9,6 +9,7 @@ interface Reference {
     methodName: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function CommandHandler(filter: CommandHandlerDescriptor.Filter<any>) {
     return (target: any, methodName: string, descriptor: PropertyDescriptor) => {
         ensureMetadata(target).push({

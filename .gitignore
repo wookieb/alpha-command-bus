@@ -2,4 +2,4 @@ compiled
 node_modules
 coverage
 *.log
-.nyc_output
+junit.xml
