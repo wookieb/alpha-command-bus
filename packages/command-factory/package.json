@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus-command-factory",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
@@ -16,6 +16,6 @@
   "author": "Łukasz Kużyński <lukasz.kuzynski@gmail.com> (http://wookieb.pl/)",
   "license": "MIT",
   "dependencies": {
-    "alpha-command-bus-core": "^1.0.0"
+    "alpha-command-bus-core": "^1.0.1"
   }
 }

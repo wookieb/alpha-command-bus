@@ -1,6 +1,6 @@
 {
   "name": "alpha-command-bus",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Very simple command bus implementation",
   "main": "compiled/index.js",
   "types": "compiled/index.d.ts",
@@ -29,8 +29,8 @@
   },
   "homepage": "https://github.com/wookieb/alpha-command-bus#readme",
   "dependencies": {
-    "alpha-command-bus-command-factory": "^1.0.0",
-    "alpha-command-bus-core": "^1.0.0",
+    "alpha-command-bus-command-factory": "^1.0.1",
+    "alpha-command-bus-core": "^1.0.1",
     "lodash.matches": "^4.6.0",
     "predicates": "^2.0.3",
     "reflect-metadata": "^0.1.10"
